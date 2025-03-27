@@ -1,0 +1,118 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Car Image Slider -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/carImageSlider"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Car Details -->
+        <TextView
+            android:id="@+id/carBrandModel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp" />
+
+        <!-- Description -->
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+        <TextView
+            android:id="@+id/carDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="2dp"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <TextView
+            android:id="@+id/carLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="2dp" />
+
+        <TextView
+            android:id="@+id/carSeats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="2dp" />
+
+        <TextView
+            android:id="@+id/carPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="2dp" />
+
+        <!-- Rating Section -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp">
+
+            <RatingBar
+                android:id="@+id/carRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:isIndicator="true"
+                android:numStars="5"
+                android:stepSize="0.5"
+                style="?android:attr/ratingBarStyleSmall"
+                android:scaleX="0.8"
+                android:scaleY="0.8" />
+
+            <TextView
+                android:id="@+id/ratingCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:layout_marginStart="4dp"
+                android:text="0.0" />
+        </LinearLayout>
+
+        <!-- Start and End Date Time Inputs -->
+        <EditText
+            android:id="@+id/startDateTimeEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Start Date and Time"
+            android:focusable="false"
+            android:clickable="true"
+            android:layout_marginTop="8dp"/>
+
+        <EditText
+            android:id="@+id/endDateTimeEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="End Date and Time"
+            android:focusable="false"
+            android:clickable="true"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Rent Button -->
+        <Button
+            android:id="@+id/rentButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rent Car"
+            android:layout_marginTop="16dp"/>
+    </LinearLayout>
+</ScrollView>

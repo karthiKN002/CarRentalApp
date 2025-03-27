@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "546703321735",
+    "project_id": "carrentalmanagementapp",
+    "storage_bucket": "carrentalmanagementapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546703321735:android:d899c43423c663c7f16622",
+        "android_client_info": {
+          "package_name": "com.example.carrentalapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546703321735-3kn8tcuiha3c1861emae1lpi77kc8j8s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.carrentalapp",
+            "certificate_hash": "9de34118723a85df15a227329bdb05febf282a74"
+          }
+        },
+        {
+          "client_id": "546703321735-gc59dfp5bhl6581grcrh3lr749uj41q8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGzvPhwEU-fjYAwMKyFUEsJLG9auexZbc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546703321735-gc59dfp5bhl6581grcrh3lr749uj41q8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
