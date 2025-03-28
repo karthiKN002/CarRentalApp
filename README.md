@@ -10,13 +10,6 @@ The **Car Rental Management App** is designed to simplify car rental processes t
 
 ---
 
-# 🚫 Project Status: Closed
-
-This project scored **76.67%** during evaluation.
-This project is no longer under active development. **Please download and experience it yourself.** Consider it as a **reference project** for learning and inspiration. Contributions or updates will not be made.
-
----
-
 ## 📝 Key Features
 
 ### **Customer's Side**
