@@ -1,10 +1,15 @@
 package com.example.gearup.uiactivities.manager;
 
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import com.example.gearup.BuildConfig;
 import com.example.gearup.R;
 import com.example.gearup.uiactivities.customer.ViewContractsFragment;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -14,6 +19,7 @@ public class ManagerDashboardActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private PlacesClient placesClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +29,16 @@ public class ManagerDashboardActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        // Initialize Places and PlacesClient
+        if (TextUtils.isEmpty(BuildConfig.GOOGLE_MAPS_API_KEY)) {
+            Log.e("ManagerDashboardActivity", "Google Maps API key is missing");
+            return;
+        }
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), BuildConfig.GOOGLE_MAPS_API_KEY);
+        }
+        placesClient = Places.createClient(this);
+
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         setupBottomNavigationView();
 
@@ -31,6 +47,10 @@ public class ManagerDashboardActivity extends AppCompatActivity {
             loadFragment(new AddCarFragment());
             bottomNavigationView.setSelectedItemId(R.id.navigation_add_car);
         }
+    }
+
+    public PlacesClient getPlacesClient() {
+        return placesClient;
     }
 
     private void setupBottomNavigationView() {
@@ -59,5 +79,11 @@ public class ManagerDashboardActivity extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        placesClient = null;
     }
 }

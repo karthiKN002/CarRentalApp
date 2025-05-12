@@ -40,7 +40,7 @@ public class FirebaseConfig extends Application {
                     .build();
             db.setFirestoreSettings(settings);
 
-            FirebaseAppCheck.getInstance().installAppCheckProviderFactory(null);
+            //FirebaseAppCheck.getInstance().installAppCheckProviderFactory(null);
 
             // Configure App Check
            /* FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();

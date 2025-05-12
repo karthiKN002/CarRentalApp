@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Looper;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
@@ -40,6 +41,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -514,41 +516,61 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        StorageReference storageRef = storage.getReferenceFromUrl("gs://carrentalmanagementapp.firebasestorage.app");
+        // Check if Activity is finishing
+        if (isFinishing()) {
+            Log.w(TAG, "Activity is finishing, aborting upload");
+            dialog.dismiss();
+            return;
+        }
+
+        // Use the default storage bucket
+        StorageReference storageRef = storage.getReference();
         StorageReference docRef = storageRef.child("manager_docs").child(uid).child("license.pdf");
 
         progressBar.setVisibility(View.VISIBLE);
         Log.d(TAG, "Uploading to: " + docRef.getPath());
         Log.d(TAG, "User authenticated: " + (mAuth.getCurrentUser() != null));
 
-        docRef.putFile(documentUri)
-                .addOnProgressListener(snapshot -> {
-                    double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                    progressBar.setProgress((int) progress);
-                    Log.d(TAG, "Upload progress: " + (int)progress + "%");
-                })
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        Log.e(TAG, "Document upload failed: " + task.getException().getMessage());
-                        return Tasks.forResult(null); // Proceed without URL
-                    }
-                    return docRef.getDownloadUrl();
-                })
-                .addOnCompleteListener(task -> {
-                    progressBar.setVisibility(View.GONE);
-                    String downloadUrl = null;
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        downloadUrl = task.getResult().toString();
-                        Log.d(TAG, "Upload successful, URL: " + downloadUrl);
-                    } else {
-                        Log.w(TAG, "Proceeding without document URL due to upload failure or null result");
-                    }
-                    saveManagerWithDocument(uid, fullName, email, phone, downloadUrl, dialog, startTime);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Upload failure details: " + e.getMessage(), e);
-                    saveManagerWithDocument(uid, fullName, email, phone, null, dialog, startTime);
+        // Create the UploadTask
+        UploadTask uploadTask = docRef.putFile(documentUri);
+
+        // Add progress listener
+        uploadTask.addOnProgressListener(snapshot -> {
+            double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+            progressBar.setProgress((int) progress);
+            Log.d(TAG, "Upload progress: " + (int) progress + "%");
+        });
+
+        // Chain the operations
+        uploadTask.continueWithTask(task -> {
+            if (!task.isSuccessful()) {
+                throw task.getException() != null ? task.getException() : new Exception("Upload failed");
+            }
+            Log.d(TAG, "Upload successful, fetching download URL...");
+            return docRef.getDownloadUrl();
+        }).addOnSuccessListener(uri -> {
+            Log.d(TAG, "Download URL fetched: " + uri.toString());
+            progressBar.setVisibility(View.GONE);
+            saveManagerWithDocument(uid, fullName, email, phone, uri.toString(), dialog, startTime);
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Upload or getDownloadUrl failed: " + e.getMessage(), e);
+            progressBar.setVisibility(View.GONE);
+            // Add a delay before retrying
+            new android.os.Handler(Looper.getMainLooper()).postDelayed(() -> {
+                docRef.getDownloadUrl().addOnSuccessListener(retryUri -> {
+                    Log.d(TAG, "Retry download URL fetched: " + retryUri.toString());
+                    saveManagerWithDocument(uid, fullName, email, phone, retryUri.toString(), dialog, startTime);
+                }).addOnFailureListener(retryException -> {
+                    Log.e(TAG, "Retry getDownloadUrl failed: " + retryException.getMessage(), retryException);
+                    // Fallback: Construct the URL manually
+                    String bucket = storage.getReference().getBucket();
+                    String path = "manager_docs/" + uid + "/license.pdf";
+                    String manualUrl = "https://firebasestorage.googleapis.com/v0/b/" + bucket + "/o/" + Uri.encode(path) + "?alt=media";
+                    Log.d(TAG, "Using manually constructed URL: " + manualUrl);
+                    saveManagerWithDocument(uid, fullName, email, phone, manualUrl, dialog, startTime);
                 });
+            }, 2000); // 2-second delay
+        });
     }
 
     private void saveManagerWithDocument(String uid, String fullName, String email, String phone, String documentUrl, AlertDialog dialog, long startTime) {

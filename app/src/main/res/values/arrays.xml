@@ -1,0 +1,18 @@
+<!-- res/values/arrays.xml -->
+<resources>
+    <string-array name="car_filters">
+        <item>All</item>
+        <item>Sedan</item>
+        <item>SUV</item>
+        <item>Sports</item>
+        <item>Luxury</item>
+        <item>Electric</item>
+    </string-array>
+
+    <string-array name="car_sort_options">
+        <item>Price: Low to High</item>
+        <item>Price: High to Low</item>
+        <item>Rating: High to Low</item>
+        <item>Newest First</item>
+    </string-array>
+</resources>

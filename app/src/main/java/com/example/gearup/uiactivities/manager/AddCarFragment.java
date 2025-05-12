@@ -25,12 +25,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.gearup.BuildConfig;
 import com.example.gearup.R;
 import com.example.gearup.adapters.ImagePreviewAdapter;
 import com.example.gearup.states.car.CarAvailabilityState;
 import com.google.android.gms.tasks.Tasks;
-import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
@@ -74,19 +72,12 @@ public class AddCarFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (TextUtils.isEmpty(BuildConfig.GOOGLE_MAPS_API_KEY)) {
-            Log.e("AddCarFragment", "Google Maps API key is missing");
-            Toast.makeText(getContext(), "Error: Google Maps API key is missing.", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        // Initialize Places only once
-        if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), BuildConfig.GOOGLE_MAPS_API_KEY);
-        }
-        // Ensure placesClient is only created once
-        if (placesClient == null) {
-            placesClient = Places.createClient(requireContext());
+        // Retrieve PlacesClient from the activity
+        if (getActivity() instanceof ManagerDashboardActivity) {
+            placesClient = ((ManagerDashboardActivity) getActivity()).getPlacesClient();
+        } else {
+            Log.e("AddCarFragment", "Parent activity is not ManagerDashboardActivity, cannot get PlacesClient");
+            Toast.makeText(getContext(), "Error: Unable to initialize location services", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -131,8 +122,7 @@ public class AddCarFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // No explicit shutdown method for PlacesClient, but setting to null prevents reuse
-        placesClient = null;
+        // No need to set placesClient to null since it's managed by the activity
     }
 
     private void selectImages() {
@@ -220,8 +210,22 @@ public class AddCarFragment extends Fragment {
             return;
         }
 
-        StorageReference storageRef = storage.getReferenceFromUrl("gs://carrentalmanagementapp.firebasestorage.app");
+        // Use the class-level storageRef
         for (Uri uri : imageUris) {
+            if (uri == null) {
+                Log.e("AddCarError", "Invalid image URI: null");
+                uploadedImages.incrementAndGet();
+                continue;
+            }
+            try {
+                // Test if the URI is accessible
+                getContext().getContentResolver().openInputStream(uri).close();
+            } catch (Exception e) {
+                Log.e("AddCarError", "Invalid image URI: " + uri, e);
+                uploadedImages.incrementAndGet();
+                continue;
+            }
+
             String fileName = UUID.randomUUID().toString() + "_image_" + System.currentTimeMillis() + ".jpg";
             StorageReference imageRef = storageRef.child("cars/" + fileName);
             Log.d("AddCarFragment", "Uploading to: " + imageRef.getPath());
@@ -229,7 +233,7 @@ public class AddCarFragment extends Fragment {
             imageRef.putFile(uri)
                     .continueWithTask(task -> {
                         if (!task.isSuccessful()) {
-                            Log.e("AddCarError", "Upload failed: " + task.getException().getMessage());
+                            Log.e("AddCarError", "Upload failed: " + (task.getException() != null ? task.getException().getMessage() : "Unknown error"));
                             return Tasks.forResult(null);
                         }
                         return imageRef.getDownloadUrl();
@@ -247,6 +251,7 @@ public class AddCarFragment extends Fragment {
                     })
                     .addOnFailureListener(e -> {
                         Log.e("AddCarError", "Upload failure: " + e.getMessage(), e);
+                        Toast.makeText(requireContext(), "Failed to upload image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         if (uploadedImages.incrementAndGet() == totalImages) {
                             saveCarToDatabase(model, brand, seats, price, location, uploadedImageUrls, description);
                         }
@@ -339,6 +344,10 @@ public class AddCarFragment extends Fragment {
     }
 
     private void openPlaceAutocomplete() {
+        if (placesClient == null) {
+            Toast.makeText(requireContext(), "Location services unavailable", Toast.LENGTH_SHORT).show();
+            return;
+        }
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG);
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
                 .build(requireContext());

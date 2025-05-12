@@ -1,3 +1,4 @@
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
 import java.util.Properties
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -86,11 +87,11 @@ dependencies {
     implementation(libs.recyclerview)
 
     // Firebase Libraries (explicit versions)
-    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
-    implementation("com.google.firebase:firebase-auth")//23.2.0
-    implementation("com.google.firebase:firebase-firestore")//25.1.4
-    implementation("com.google.firebase:firebase-storage")//21.0.1
-    implementation("com.google.firebase:firebase-database-ktx")//21.0.0
+    implementation("com.google.firebase:firebase-auth:23.2.0")//23.2.0
+    implementation("com.google.firebase:firebase-firestore:25.1.4")//25.1.4
+    implementation("com.google.firebase:firebase-storage:21.0.1")//21.0.1
+    implementation("com.google.firebase:firebase-database-ktx:21.0.0")//21.0.0
+
 
 
     // Play Services (explicit versions)
@@ -102,6 +103,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-base:18.4.0")
     implementation("com.google.android.gms:play-services-auth-api-phone:18.2.0")//
     implementation("com.google.android.gms:play-services-wallet:18.1.3")
+    implementation("com.google.android.gms:play-services-places:17.0.0")
 
 
 
@@ -119,7 +121,6 @@ dependencies {
     // Networking
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
-
     implementation("androidx.core:core-ktx:1.16.0")//1.12.0
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")//2.6.2
 
