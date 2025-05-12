@@ -25,4 +25,8 @@
     <string name="send_otp">Send OTP</string>
     <string name="verify_otp">Verify OTP</string>
     <string name="user">User</string>
+    <string name="upload_license" />
+    <string name="upload_rental_license">Upload Rental License</string>
+    <string name="resend_otp" />
+    <string name="app_check_debug_token">YOUR_DEBUG_TOKEN_HERE</string>
 </resources>

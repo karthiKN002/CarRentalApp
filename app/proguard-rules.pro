@@ -21,3 +21,4 @@
 #-renamesourcefileattribute SourceFile
 -keep class com.google.android.gms.** { *; }
 -keep interface com.google.android.gms.** { *; }
+-dontwarn com.google.android.libraries.places.internal.**

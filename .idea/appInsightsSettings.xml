@@ -9,10 +9,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.carrentalapp" />
-                  <option name="mobileSdkAppId" value="1:546703321735:android:d899c43423c663c7f16622" />
-                  <option name="projectId" value="carrentalmanagementapp" />
-                  <option name="projectNumber" value="546703321735" />
+                  <option name="appId" value="com.example.gearup" />
+                  <option name="mobileSdkAppId" value="1:101337695040:android:4f6e763f34de49e295f0a5" />
+                  <option name="projectId" value="carrental-93e66" />
+                  <option name="projectNumber" value="101337695040" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

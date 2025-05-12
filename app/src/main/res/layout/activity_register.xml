@@ -63,6 +63,25 @@
                 android:maxLength="10"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <RadioGroup
+            android:id="@+id/radioGroupUserType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <RadioButton
+                android:id="@+id/radioCustomer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Customer" />
+            <RadioButton
+                android:id="@+id/radioManager"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Manager" />
+        </RadioGroup>
+
         <!-- OTP -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/otpLayout"
@@ -84,34 +103,43 @@
             android:id="@+id/buttonSendOtp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/send_otp" />
+            android:text="@string/send_otp"
+            android:visibility="visible"/>
 
         <Button
             android:id="@+id/buttonVerifyOtp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/verify_otp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
-        <!-- User Type Selection -->
-        <RadioGroup
-            android:id="@+id/radioGroupUserType"
+        <Button
+            android:id="@+id/buttonResendOtp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="@string/resend_otp"
+            android:visibility="gone"/>
 
-            <RadioButton
-                android:id="@+id/radioButtonUser"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/user" />
+        <!-- Explanatory Text for Upload Button -->
+        <TextView
+            android:id="@+id/uploadDocDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload your license and authorized documents of your store"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone"/>
 
-            <RadioButton
-                android:id="@+id/radioButtonManager"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/manager" />
-        </RadioGroup>
+        <Button
+            android:id="@+id/buttonUploadDoc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/upload_rental_license"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"/>
 
         <!-- Register Button -->
         <Button
@@ -119,12 +147,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/register"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone" />
+            android:visibility="gone"/>
+
     </LinearLayout>
 </ScrollView>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.carrentalapp">
+    package="com.example.gearup">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -15,11 +15,12 @@
     <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
 
     <application
-        android:name=".FirebaseConfig"
+        android:name="com.example.gearup.FirebaseConfig"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -32,7 +33,7 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".splash.Splash"
+            android:name="com.example.gearup.splash.Splash"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,33 +46,41 @@
             android:value="${STRIPE_PUBLISHABLE_KEY}" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBGzvPhwEU-fjYAwMKyFUEsJLG9auexZbc" />
-        <meta-data
-            android:name="com.google.firebase.auth.recaptcha.siteKey"
-            android:value="AIzaSyAognan0n4rWwVIgR3ofdsfYBB0YRxTn3E" />
+            android:value="${GOOGLE_MAPS_API_KEY}" />
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-        <meta-data
+        <!--<meta-data
             android:name="com.google.android.gms.security.provider.installer"
             android:value="com.google.android.gms"/>
-
-
+        <meta-data
+            android:name="com.google.android.play.integrity.verdictdservice.url"
+            android:value="https://play.googleapis.com" />-->
+        <!--<meta-data
+            android:name="firebase_app_check_provider"
+            android:value="playIntegrity,recaptcha"/>
+-->
         <activity
-            android:name=".uiactivities.customer.CustomerDashboardActivity"
+            android:name="com.example.gearup.uiactivities.customer.CustomerDashboardActivity"
             android:exported="false" />
         <activity
-            android:name=".uiactivities.admin.AdminDashboardActivity"
+            android:name="com.example.gearup.uiactivities.manager.ManagerDashboardActivity"
             android:exported="false" />
         <activity
-            android:name=".utilities.RegisterActivity"
+            android:name="com.example.gearup.uiactivities.admin.AdminDashboardActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.gearup.uiactivities.admin.AdminApprovalActivity"
             android:exported="false" />
         <activity
-            android:name=".utilities.LoginActivity"
+            android:name="com.example.gearup.utilities.RegisterActivity"
             android:exported="true" />
+        <activity
+            android:name="com.example.gearup.utilities.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.gearup.MainActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

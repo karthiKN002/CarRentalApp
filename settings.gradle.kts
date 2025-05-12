@@ -19,6 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "CarRentalApp"
+rootProject.name = "CarRentalManagement" // Updated to match the project directory
 include(":app")
- 
