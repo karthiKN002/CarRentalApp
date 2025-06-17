@@ -1,6 +1,7 @@
 package com.example.gearup.uiactivities.admin;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdminApprovalActivity extends AppCompatActivity implements OnApproveClickListener {
+    private static final String TAG = "AdminApprovalActivity";
     private RecyclerView recyclerView;
     private PendingApprovalAdapter adapter;
     private FirebaseFirestore db;
@@ -49,6 +51,7 @@ public class AdminApprovalActivity extends AppCompatActivity implements OnApprov
                     recyclerView.setVisibility(View.VISIBLE);
 
                     if (e != null) {
+                        Log.e(TAG, "Failed to load pending managers: " + e.getMessage());
                         Toast.makeText(this, "Failed to load pending managers: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -58,8 +61,11 @@ public class AdminApprovalActivity extends AppCompatActivity implements OnApprov
                         for (QueryDocumentSnapshot document : querySnapshot) {
                             PendingApproval approval = document.toObject(PendingApproval.class);
                             approval.setId(document.getId());
+                            Log.d(TAG, "Loaded manager: " + approval.getFullName() + ", Document: " + approval.getDocumentUrl());
                             pendingApprovals.add(approval);
                         }
+                    } else {
+                        Log.w(TAG, "Query snapshot is null");
                     }
                     adapter.updateList(pendingApprovals);
                 });
@@ -71,7 +77,6 @@ public class AdminApprovalActivity extends AppCompatActivity implements OnApprov
                 .update("isApproved", true)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Manager approved", Toast.LENGTH_SHORT).show();
-                    // No need to reload manually; real-time listener handles updates
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to approve manager: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -84,7 +89,6 @@ public class AdminApprovalActivity extends AppCompatActivity implements OnApprov
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Manager rejected", Toast.LENGTH_SHORT).show();
-                    // No need to reload manually; real-time listener handles updates
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to reject manager: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -94,7 +98,6 @@ public class AdminApprovalActivity extends AppCompatActivity implements OnApprov
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Remove the listener to prevent memory leaks
         if (listenerRegistration != null) {
             listenerRegistration.remove();
             listenerRegistration = null;

@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
@@ -16,10 +17,17 @@
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
-
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" android:maxSdkVersion="33" />
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
     <application
+        android:enableOnBackInvokedCallback="true"
         android:name="com.example.gearup.FirebaseConfig"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -50,16 +58,15 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-        <!--<meta-data
+        <meta-data
             android:name="com.google.android.gms.security.provider.installer"
             android:value="com.google.android.gms"/>
         <meta-data
             android:name="com.google.android.play.integrity.verdictdservice.url"
-            android:value="https://play.googleapis.com" />-->
-        <!--<meta-data
+            android:value="https://play.googleapis.com" />
+        <meta-data
             android:name="firebase_app_check_provider"
-            android:value="playIntegrity,recaptcha"/>
--->
+            android:value="playIntegrity"/>
         <activity
             android:name="com.example.gearup.uiactivities.customer.CustomerDashboardActivity"
             android:exported="false" />
@@ -81,6 +88,8 @@
         <activity
             android:name="com.example.gearup.MainActivity"
             android:exported="false" />
+        <activity android:name=".uiactivities.admin.ManagerDetailsActivity" />
+
     </application>
 
 </manifest>

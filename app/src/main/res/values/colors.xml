@@ -21,4 +21,6 @@
     <color name="colorActive">#6EC531</color> <!-- Active color for "Block" -->
     <color name="colorProfileCardBackground">#F5F5F5</color>
     <color name="red">#A41042</color>
+    <color name="custom_red">#FF0000</color>
+    <color name="custom_green">#00FF00</color>
 </resources>

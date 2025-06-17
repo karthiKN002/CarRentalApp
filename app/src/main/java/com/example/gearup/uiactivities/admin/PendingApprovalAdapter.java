@@ -49,45 +49,45 @@ public class PendingApprovalAdapter extends RecyclerView.Adapter<PendingApproval
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        private final TextView nameTextView;
         private final TextView emailTextView;
         private final TextView phoneTextView;
         private final TextView documentStatusTextView;
+        private final TextView videoStatusTextView;
+        private final Button viewDetailsButton;
         private final Button approveButton;
         private final Button rejectButton;
-        private final Button viewDocumentButton;
 
         public ViewHolder(View view) {
             super(view);
+            nameTextView = view.findViewById(R.id.textViewName);
             emailTextView = view.findViewById(R.id.textViewEmail);
             phoneTextView = view.findViewById(R.id.textViewPhone);
             documentStatusTextView = view.findViewById(R.id.textViewDocumentStatus);
+            videoStatusTextView = view.findViewById(R.id.textViewVideoStatus);
+            viewDetailsButton = view.findViewById(R.id.buttonViewDetails);
             approveButton = view.findViewById(R.id.buttonApprove);
             rejectButton = view.findViewById(R.id.buttonReject);
-            viewDocumentButton = view.findViewById(R.id.buttonViewDocument);
         }
 
         public void bind(PendingApproval approval, OnApproveClickListener listener) {
+            nameTextView.setText(String.format("Name: %s", approval.getFullName()));
             emailTextView.setText(String.format("Email: %s", approval.getEmail()));
             phoneTextView.setText(String.format("Phone: %s", approval.getPhone()));
 
-            if (approval.hasDocument()) {
-                documentStatusTextView.setText("Document: Available");
-                viewDocumentButton.setVisibility(View.VISIBLE);
-                viewDocumentButton.setOnClickListener(v -> {
-                    try {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setData(Uri.parse(approval.getDocumentUrl()));
-                        v.getContext().startActivity(intent);
-                    } catch (Exception e) {
-                        Log.e("PendingApprovalAdapter", "Failed to open document URL: " + approval.getDocumentUrl(), e);
-                        documentStatusTextView.setText("Document: Cannot open (install a PDF viewer)");
-                        viewDocumentButton.setVisibility(View.GONE);
-                    }
-                });
-            } else {
-                documentStatusTextView.setText("Document: Not submitted");
-                viewDocumentButton.setVisibility(View.GONE);
-            }
+            documentStatusTextView.setText(approval.hasDocument() ? "Document: Available" : "Document: Not submitted");
+            videoStatusTextView.setText(approval.hasVideo() ? "Video: Available" : "Video: Not submitted");
+
+            viewDetailsButton.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), ManagerDetailsActivity.class);
+                intent.putExtra("manager_id", approval.getId());
+                intent.putExtra("full_name", approval.getFullName());
+                intent.putExtra("email", approval.getEmail());
+                intent.putExtra("phone", approval.getPhone());
+                intent.putExtra("document_url", approval.getDocumentUrl());
+                intent.putExtra("video_url", approval.getStoreVideo());
+                v.getContext().startActivity(intent);
+            });
 
             approveButton.setOnClickListener(v -> {
                 if (listener != null) {

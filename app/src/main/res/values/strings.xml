@@ -1,32 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CarRentalApp</string>
-    <string name="logo_description">App Logo</string>
-    <string name="location_icon_description">Location Icon</string>
-    <string name="seat_icon_description">Seat Icon</string>
-    <string name="price_icon_description">Price Icon</string>
+    <string name="app_logo">App Logo</string>
+    <string name="location_icon">Location Icon</string>
+    <string name="seat_icon">Seat Icon</string>
+    <string name="price_icon">Price Icon</string>
     <string name="user_avatar">User Avatar</string>
-    <string name="rate_experience_button_description">Rate Experience Button</string>
-    <string name="view_details_button_description">View Details Button</string>
-    <string name="edit_contract_button_description">Edit Contract Button</string>
+    <string name="rate_experience_button">Rate Experience Button</string>
+    <string name="view_details_button">View Details Button</string>
+    <string name="edit_contract_button">Edit Contract Button</string>
     <string name="car_image">Car Image</string>
-    <string name="hint_email">Email</string>
-    <string name="hint_password">Password</string>
-    <string name="hint_phone">Phone Number</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="phone_number_label">Phone Number</string>
     <string name="manager">Manager</string>
-    <string name="upload_document">Upload Document (PDF)</string>
+    <string name="upload_document_pdf">Upload Document (PDF)</string>
     <string name="register">Register</string>
     <string name="otp">OTP</string>
     <string name="full_name">Full Name</string>
-    <string name="email">Email</string>
-    <string name="password">Password</string>
-    <string name="phone_number">Phone Number</string>
+    <string name="email_input">Email</string>
+    <string name="password_input">Password</string>
+    <string name="phone_number_input">Phone Number</string>
     <string name="enter_otp">Enter OTP</string>
     <string name="send_otp">Send OTP</string>
     <string name="verify_otp">Verify OTP</string>
     <string name="user">User</string>
-    <string name="upload_license" />
     <string name="upload_rental_license">Upload Rental License</string>
-    <string name="resend_otp" />
-    <string name="app_check_debug_token">YOUR_DEBUG_TOKEN_HERE</string>
+
+    <!-- Firebase Configuration -->
+    <string name="google_app_id">1:101337695040:android:4f6e763f34de49e295f0a5</string>
+    <string name="google_config_api_key">AIzaSyDvAWPoyJTf_aTv27hqU3zFDBTKg3Xwe9E</string>
+    <string name="firebase_database_url">https://carrental-93e66.firebaseio.com</string>
+    <string name="gcs_bucket">carrental-93e66.firebasestorage.app</string>
+    <string name="project_id">carrental-93e66</string>
+
+    <!-- Missing Accessibility Descriptions -->
+    <string name="logo_description">Logo of CarRentalApp</string>
+    <string name="location_icon_description">Icon representing the car\'s location</string>
+    <string name="seat_icon_description">Icon indicating the number of seats in the car</string>
+    <string name="price_icon_description">Icon showing the rental price of the car</string>
+
+    <!-- App Check Error Message -->
+    <string name="app_check_failed">App verification failed. Please try again later.</string>
 </resources>

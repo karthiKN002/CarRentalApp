@@ -125,6 +125,12 @@ public class RentCarFragment extends Fragment {
         endDateTimeEditText = view.findViewById(R.id.endDateTimeEditText);
         rentButton = view.findViewById(R.id.rentButton);
 
+        PaymentConfiguration.init(
+                requireContext(),
+                "pk_test_51R4G3sGDA6z1HzAN9tHO0HdQfk2SqETFZPxOIxfqbRTVsRexjwKVeWYCRr9RyW2LkDpKizE15KUD4tU8jzqoRB5a00VB9OCjZ4" // From your local.properties
+        );
+
+
 
 
         // Retrieve car data from arguments
