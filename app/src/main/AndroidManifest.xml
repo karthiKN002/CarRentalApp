@@ -26,6 +26,8 @@
     <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
+
+
     <application
         android:enableOnBackInvokedCallback="true"
         android:name="com.example.gearup.FirebaseConfig"
@@ -48,6 +50,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".utilities.MapPickerActivity" />
+        <service
+            android:name=".uiactivities.manager.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <meta-data
             android:name="com.stripe.android.API_KEY"
@@ -72,7 +82,8 @@
             android:exported="false" />
         <activity
             android:name="com.example.gearup.uiactivities.manager.ManagerDashboardActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/AppTheme"/>
         <activity
             android:name="com.example.gearup.uiactivities.admin.AdminDashboardActivity"
             android:exported="false" />
@@ -83,12 +94,20 @@
             android:name="com.example.gearup.utilities.RegisterActivity"
             android:exported="true" />
         <activity
+            android:name=".uiactivities.admin.CarApprovalActivity"
+            android:exported="false" />
+        <activity
             android:name="com.example.gearup.utilities.LoginActivity"
             android:exported="false" />
         <activity
             android:name="com.example.gearup.MainActivity"
             android:exported="false" />
         <activity android:name=".uiactivities.admin.ManagerDetailsActivity" />
+
+        <activity
+            android:name=".uiactivities.admin.CarDetailsActivity"
+            android:exported="false" />
+
 
     </application>
 

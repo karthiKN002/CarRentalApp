@@ -1,5 +1,6 @@
 package com.example.gearup.uiactivities.admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,12 +16,12 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AdminApprovalActivity extends AppCompatActivity implements OnApproveClickListener {
+public class AdminApprovalActivity extends AppCompatActivity implements PendingApprovalAdapter.OnViewDetailsClickListener {
     private static final String TAG = "AdminApprovalActivity";
     private RecyclerView recyclerView;
     private PendingApprovalAdapter adapter;
     private FirebaseFirestore db;
-    private List<PendingApproval> pendingApprovals = new ArrayList<>();
+    private List<PendingApproval> pendingUsers = new ArrayList<>();
     private ProgressBar progressBar;
     private ListenerRegistration listenerRegistration;
 
@@ -33,66 +34,90 @@ public class AdminApprovalActivity extends AppCompatActivity implements OnApprov
         recyclerView = findViewById(R.id.recyclerView);
         progressBar = findViewById(R.id.progressBar);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new PendingApprovalAdapter(pendingApprovals, this);
+        adapter = new PendingApprovalAdapter(pendingUsers, this);
         recyclerView.setAdapter(adapter);
 
-        loadPendingManagers();
+        String userType = getIntent().getStringExtra("userType");
+        Log.d(TAG, "Received userType: " + userType);
+        if (userType == null || userType.isEmpty()) {
+            Log.e(TAG, "userType is null or empty, defaulting to 'manager'");
+            userType = "manager";
+        }
+        loadPendingUsers(userType);
+
+        // Debug: Fetch specific document to test deserialization
+        db.collection("users").document("jrN5l7cBmhNqNyL8T3ZL93hBTHd2").get()
+                .addOnSuccessListener(document -> {
+                    Log.d(TAG, "Manual fetch data: " + document.getData());
+                    try {
+                        PendingApproval user = document.toObject(PendingApproval.class);
+                        if (user != null) {
+                            user.setId(document.getId());
+                            Log.d(TAG, "Manual deserialization success: " + user.getFullName() + ", ID: " + user.getId());
+                        } else {
+                            Log.e(TAG, "Manual deserialization returned null");
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Manual deserialization error: " + e.getMessage());
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Manual fetch error: " + e.getMessage()));
     }
 
-    private void loadPendingManagers() {
+    private void loadPendingUsers(String userType) {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
 
         listenerRegistration = db.collection("users")
-                .whereEqualTo("userType", "manager")
                 .whereEqualTo("isApproved", false)
+                .whereEqualTo("userType", userType)
                 .addSnapshotListener((querySnapshot, e) -> {
                     progressBar.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
 
                     if (e != null) {
-                        Log.e(TAG, "Failed to load pending managers: " + e.getMessage());
-                        Toast.makeText(this, "Failed to load pending managers: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Firestore error: " + e.getMessage());
+                        Toast.makeText(this, "Failed to load users: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    pendingApprovals.clear();
+                    pendingUsers.clear();
+                    Log.d(TAG, "Query snapshot size: " + (querySnapshot != null ? querySnapshot.size() : 0));
                     if (querySnapshot != null) {
                         for (QueryDocumentSnapshot document : querySnapshot) {
-                            PendingApproval approval = document.toObject(PendingApproval.class);
-                            approval.setId(document.getId());
-                            Log.d(TAG, "Loaded manager: " + approval.getFullName() + ", Document: " + approval.getDocumentUrl());
-                            pendingApprovals.add(approval);
+                            Log.d(TAG, "Raw document data: " + document.getData());
+                            try {
+                                PendingApproval user = document.toObject(PendingApproval.class);
+                                user.setId(document.getId());
+                                pendingUsers.add(user);
+                                Log.d(TAG, "Added user: " + user.getFullName() + ", ID: " + user.getId());
+                            } catch (Exception ex) {
+                                Log.e(TAG, "Deserialization error for doc " + document.getId() + ": " + ex.getMessage());
+                            }
                         }
-                    } else {
-                        Log.w(TAG, "Query snapshot is null");
                     }
-                    adapter.updateList(pendingApprovals);
+                    Log.d(TAG, "Total users loaded: " + pendingUsers.size());
+                    adapter.updateList(pendingUsers);
+                    adapter.notifyDataSetChanged(); // Ensure adapter is notified
+                    Log.d(TAG, "Adapter item count: " + adapter.getItemCount());
+
+                    // Handle empty state
+                    View emptyView = findViewById(R.id.emptyView);
+                    if (emptyView != null) {
+                        emptyView.setVisibility(pendingUsers.isEmpty() ? View.VISIBLE : View.GONE);
+                        recyclerView.setVisibility(pendingUsers.isEmpty() ? View.GONE : View.VISIBLE);
+                        Log.d(TAG, "Empty view visibility: " + (emptyView.getVisibility() == View.VISIBLE ? "VISIBLE" : "GONE"));
+                        Log.d(TAG, "RecyclerView visibility: " + (recyclerView.getVisibility() == View.VISIBLE ? "VISIBLE" : "GONE"));
+                    }
                 });
     }
 
     @Override
-    public void onApproveClick(PendingApproval approval) {
-        db.collection("users").document(approval.getId())
-                .update("isApproved", true)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Manager approved", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to approve manager: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    @Override
-    public void onRejectClick(String uid) {
-        db.collection("users").document(uid)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Manager rejected", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to reject manager: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+    public void onViewDetailsClick(PendingApproval user) {
+        Log.d(TAG, "View details clicked for user: " + user.getId());
+        Intent intent = new Intent(this, ManagerDetailsActivity.class);
+        intent.putExtra("managerId", user.getId());
+        startActivity(intent);
     }
 
     @Override
@@ -100,7 +125,6 @@ public class AdminApprovalActivity extends AppCompatActivity implements OnApprov
         super.onDestroy();
         if (listenerRegistration != null) {
             listenerRegistration.remove();
-            listenerRegistration = null;
         }
     }
 }

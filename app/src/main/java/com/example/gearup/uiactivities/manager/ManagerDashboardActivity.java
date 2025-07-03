@@ -44,8 +44,8 @@ public class ManagerDashboardActivity extends AppCompatActivity {
 
         // Load default fragment
         if (savedInstanceState == null) {
-            loadFragment(new AddCarFragment());
-            bottomNavigationView.setSelectedItemId(R.id.navigation_add_car);
+            loadFragment(new ChatListFragment());
+            bottomNavigationView.setSelectedItemId(R.id.navigation_chat);
         }
     }
 
@@ -57,14 +57,16 @@ public class ManagerDashboardActivity extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Fragment fragment = null;
             int itemId = item.getItemId();
-            if (itemId == R.id.navigation_add_car) {
-                fragment = new AddCarFragment();
+            if (itemId == R.id.navigation_chat) {
+                fragment = new ChatListFragment();
             } else if (itemId == R.id.navigation_view_cars) {
                 fragment = new ViewCarsFragment();
-            } else if (itemId == R.id.navigation_view_users) {
-                fragment = new ViewUsersFragment();
+            } else if (itemId == R.id.navigation_add_car) {
+                fragment = new AddCarFragment();
             } else if (itemId == R.id.navigation_view_contracts) {
                 fragment = new ViewContractsFragment();
+            } else if (itemId == R.id.navigation_view_users) {
+                fragment = new ViewUsersFragment();
             }
             return loadFragment(fragment);
         });

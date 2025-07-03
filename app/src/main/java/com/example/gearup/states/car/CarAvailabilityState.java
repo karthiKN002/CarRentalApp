@@ -1,6 +1,14 @@
 package com.example.gearup.states.car;
 
 public enum CarAvailabilityState {
+    PENDING,
     AVAILABLE,
-    UNAVAILABLE
+    RENTED,
+    MAINTENANCE,
+    UNAVAILABLE;
+
+    @Override
+    public String toString() {
+        return name();
+    }
 }

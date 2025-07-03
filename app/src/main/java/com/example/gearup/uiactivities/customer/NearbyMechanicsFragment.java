@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.gearup.BuildConfig;
 import com.example.gearup.R;
+import com.example.gearup.adapters.MechanicsAdapter;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
@@ -39,7 +40,7 @@ public class NearbyMechanicsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
         if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), BuildConfig.GOOGLE_MAPS_API_KEY);
+            Places.initialize(requireContext().getApplicationContext(), BuildConfig.GOOGLE_MAPS_API_KEY);
         }
         placesClient = Places.createClient(requireContext());
         mechanicsList = new ArrayList<>();
@@ -61,6 +62,14 @@ public class NearbyMechanicsFragment extends Fragment {
         }
 
         return view;
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Shut down PlacesClient to prevent ManagedChannel leak
+        if (placesClient != null) {
+            placesClient = null; // Clear reference to allow garbage collection
+        }
     }
 
     private void fetchNearbyMechanics() {

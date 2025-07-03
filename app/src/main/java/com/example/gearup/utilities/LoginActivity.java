@@ -1,5 +1,7 @@
 package com.example.gearup.utilities;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -40,6 +42,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -203,15 +207,20 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void saveUserToFirestore(User user) {
-        db.collection("users").document(user.getUid()).set(user)
-                .addOnSuccessListener(aVoid -> {
-                    saveUserToPreferences(user.getUid(), user.getEmail(), user.getUserType(), user.getFullName());
-                    navigateToDashboard(user.getUserType(), user.isApproved());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("LoginActivity", "Error saving user data", e);
-                    Toast.makeText(this, "Error saving user data", Toast.LENGTH_SHORT).show();
-                });
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                user.setFcmToken(task.getResult()); // Assume User class has setFcmToken
+            }
+            db.collection("users").document(user.getUid()).set(user)
+                    .addOnSuccessListener(aVoid -> {
+                        saveUserToPreferences(user.getUid(), user.getEmail(), user.getUserType(), user.getFullName());
+                        navigateToDashboard(user.getUserType(), user.isApproved());
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("LoginActivity", "Error saving user data", e);
+                        Toast.makeText(this, "Error saving user data", Toast.LENGTH_SHORT).show();
+                    });
+        });
     }
 
     private void saveUserToPreferences(String userId, String email, String userType, String fullName) {
@@ -262,26 +271,33 @@ public class LoginActivity extends AppCompatActivity {
         return true;
     }
 
+    private void saveFcmToken(String userId) {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                String fcmToken = task.getResult();
+                db.collection("users").document(userId)
+                        .update("fcmToken", fcmToken)
+                        .addOnSuccessListener(aVoid -> Log.d("LoginActivity", "FCM token saved"))
+                        .addOnFailureListener(e -> Log.e("LoginActivity", "Failed to save FCM token", e));
+            }
+        });
+    }
+
+    // Update navigateUser to include token saving
     private void navigateUser(FirebaseUser firebaseUser, String provider) {
         db.collection("users").document(firebaseUser.getUid()).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         String userType = document.getString("userType");
-                        Boolean approved = document.getBoolean("isApproved"); // Can be null
+                        Boolean approved = document.getBoolean("isApproved");
                         if (approved == null) {
-                            approved = false; // Default to false if not set
+                            approved = false;
                         }
-
                         String fullName = document.getString("fullName");
                         String email = document.getString("email");
 
-                        saveUserToPreferences(
-                                firebaseUser.getUid(),
-                                email,
-                                userType,
-                                fullName
-                        );
-
+                        saveUserToPreferences(firebaseUser.getUid(), email, userType, fullName);
+                        saveFcmToken(firebaseUser.getUid()); // Add this
                         navigateToDashboard(userType, approved);
                     } else {
                         Toast.makeText(this, "User profile not found. Please register.", Toast.LENGTH_SHORT).show();
@@ -324,6 +340,7 @@ public class LoginActivity extends AppCompatActivity {
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

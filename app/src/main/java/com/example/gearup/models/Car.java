@@ -19,6 +19,7 @@ public class Car {
     private int ratingCount;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private String managerId;
     @PropertyName("state")
     private CarAvailabilityState currentState;
     private String description;
@@ -68,6 +69,8 @@ public class Car {
         return id;
     }
 
+    public String getManagerId() { return managerId; }
+    public void setManagerId(String managerId) { this.managerId = managerId; }
     public void setId(String id) {
         this.id = id;
     }

@@ -11,18 +11,15 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.example.gearup.R;
 import com.example.gearup.states.car.CarAvailabilityState;
+import com.example.gearup.uiactivities.customer.CarDetailsFragment;
 import com.example.gearup.uiactivities.manager.EditCarFragment;
 import com.example.gearup.models.Car;
-import com.example.gearup.uiactivities.customer.RentCarFragment;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +27,7 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
 
     private List<Car> carList;
     private Context context;
-    private boolean isAdminOrManager; // Renamed for clarity
+    private boolean isAdminOrManager;
 
     public CarAdapter(Context context, List<Car> carList, boolean isAdminOrManager) {
         this.context = context;
@@ -68,23 +65,17 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
         if (isAdminOrManager) {
             holder.actionButton.setEnabled(true);
             holder.actionButton.setText("Edit");
+            holder.actionButton.setVisibility(View.VISIBLE);
         } else {
-            if (car.getCurrentState() == CarAvailabilityState.AVAILABLE) {
-                holder.actionButton.setEnabled(true);
-                holder.actionButton.setText("Rent");
-            } else {
-                holder.actionButton.setEnabled(false);
-                holder.actionButton.setText("Unavailable");
-            }
+            holder.actionButton.setVisibility(View.GONE);
         }
 
         holder.actionButton.setOnClickListener(v -> {
             try {
                 FragmentActivity fragmentActivity = (FragmentActivity) context;
-                Log.d("CarAdapter", "Action button clicked for car: " + car.getId() + ", isAdminOrManager: " + isAdminOrManager);
                 if (isAdminOrManager) {
                     EditCarFragment editCarFragment = new EditCarFragment();
-                    Bundle bundle = new Bundle(); // Renamed bundleEdit to bundle for consistency
+                    Bundle bundle = new Bundle();
                     bundle.putString("carId", car.getId());
                     bundle.putString("carBrand", car.getBrand());
                     bundle.putString("carModel", car.getModel());
@@ -96,44 +87,39 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
                     bundle.putString("carDescription", car.getDescription());
                     bundle.putFloat("rating", car.getRating());
                     bundle.putInt("ratingCount", car.getRatingCount());
-
                     editCarFragment.setArguments(bundle);
-
                     fragmentActivity.getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.managerFragmentContainer, editCarFragment)
                             .addToBackStack(null)
                             .commit();
-                } else {
-                    if (car.getCurrentState() == CarAvailabilityState.AVAILABLE) {
-                        RentCarFragment rentCarFragment = new RentCarFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("carId", car.getId());
-                        bundle.putString("carBrandModel", car.getBrand() + " " + car.getModel());
-                        bundle.putString("carLocation", car.getLocation());
-                        bundle.putInt("carSeats", car.getSeats());
-                        bundle.putDouble("carPrice", car.getPrice());
-                        bundle.putFloat("carRating", car.getRating());
-                        bundle.putStringArrayList("carImageUrls", new ArrayList<>(car.getImages()));
-                        bundle.putString("carDescription", car.getDescription());
-
-                        rentCarFragment.setArguments(bundle);
-
-                        fragmentActivity.getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.customerFragmentContainer, rentCarFragment)
-                                .addToBackStack(null)
-                                .commit();
-                    } else {
-                        Toast.makeText(context, "Car is currently unavailable", Toast.LENGTH_SHORT).show();
-                    }
                 }
-            } catch (ClassCastException e) {
-                Log.e("CarAdapter", "Context is not a FragmentActivity", e);
-                Toast.makeText(context, "Error navigating to fragment", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Log.e("CarAdapter", "Error navigating to fragment", e);
                 Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        holder.itemView.setOnClickListener(v -> {
+            if (!isAdminOrManager) {
+                FragmentActivity fragmentActivity = (FragmentActivity) context;
+                CarDetailsFragment carDetailsFragment = new CarDetailsFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("carId", car.getId());
+                bundle.putString("carBrandModel", car.getBrand() + " " + car.getModel());
+                bundle.putString("carLocation", car.getLocation());
+                bundle.putInt("carSeats", car.getSeats());
+                bundle.putDouble("carPrice", car.getPrice());
+                bundle.putFloat("carRating", car.getRating());
+                bundle.putStringArrayList("carImageUrls", new ArrayList<>(car.getImages()));
+                bundle.putString("carDescription", car.getDescription());
+                bundle.putString("managerId", car.getManagerId());
+                carDetailsFragment.setArguments(bundle);
+                fragmentActivity.getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.customerFragmentContainer, carDetailsFragment)
+                        .addToBackStack(null)
+                        .commit();
             }
         });
     }

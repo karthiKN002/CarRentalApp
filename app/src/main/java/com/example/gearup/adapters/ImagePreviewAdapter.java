@@ -4,106 +4,92 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-
+import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.example.gearup.R;
-
 import java.util.ArrayList;
+import java.util.List;
 
 public class ImagePreviewAdapter extends RecyclerView.Adapter<ImagePreviewAdapter.ImageViewHolder> {
-    private ArrayList<String> imageUrls;
-    private Context context;
-    private OnImageRemoveListener onImageRemoveListener;
+
+    private final Context context;
+    private final ArrayList<String> images;
+    private final OnImageRemoveListener removeListener;
 
     public interface OnImageRemoveListener {
         void onRemove(int position);
     }
 
-    public ImagePreviewAdapter(Context context, ArrayList<String> imageUrls, OnImageRemoveListener listener) {
+    public ImagePreviewAdapter(Context context, ArrayList<String> images, OnImageRemoveListener listener) {
         this.context = context;
-        this.imageUrls = imageUrls != null ? imageUrls : new ArrayList<>();
-        this.onImageRemoveListener = listener;
+        this.images = new ArrayList<>(images); // Defensive copy
+        this.removeListener = listener;
     }
 
     @NonNull
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_image_preview, parent, false);
-        return new ImageViewHolder(view, onImageRemoveListener);
+        return new ImageViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-        if (imageUrls.isEmpty()) {
-            Glide.with(context)
-                    .load(R.drawable.car_placeholder)
-                    .into(holder.imageView);
-            holder.removeButton.setVisibility(View.GONE);
-        } else {
-            String imageUrl = imageUrls.get(position);
-            Glide.with(context)
-                    .load(imageUrl)
-                    .placeholder(R.drawable.car_placeholder)
-                    .into(holder.imageView);
-            holder.removeButton.setVisibility(View.VISIBLE);
-        }
+        String imageUrl = images.get(position);
+        Glide.with(context)
+                .load(imageUrl)
+                .centerCrop()
+                .into(holder.imageView);
+        holder.removeButton.setOnClickListener(v -> {
+            if (removeListener != null) {
+                removeListener.onRemove(holder.getAdapterPosition());
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return imageUrls.isEmpty() ? 1 : imageUrls.size();
+        return images.size();
     }
 
-    public void updateImages(ArrayList<String> newImageUrls) {
-        this.imageUrls = newImageUrls != null ? newImageUrls : new ArrayList<>();
-        notifyDataSetChanged();
-    }
-
-    public void addImage(String imageUrl) {
-        if (imageUrls == null) {
-            imageUrls = new ArrayList<>();
-        }
-        imageUrls.add(imageUrl);
-        notifyItemInserted(imageUrls.size() - 1);
+    public void addImages(List<String> newImages) {
+        int startPosition = images.size();
+        images.addAll(newImages);
+        notifyItemRangeInserted(startPosition, newImages.size());
     }
 
     public void removeImage(int position) {
-        if (position >= 0 && position < imageUrls.size()) {
-            imageUrls.remove(position);
+        if (position >= 0 && position < images.size()) {
+            images.remove(position);
             notifyItemRemoved(position);
-            notifyItemRangeChanged(position, imageUrls.size());
+            notifyItemRangeChanged(position, images.size());
         }
     }
 
+    public void updateImages(List<String> newImages) {
+        images.clear();
+        images.addAll(newImages);
+        notifyDataSetChanged();
+    }
+
     public String getImageAt(int position) {
-        if (position >= 0 && position < imageUrls.size()) {
-            return imageUrls.get(position);
+        if (position >= 0 && position < images.size()) {
+            return images.get(position);
         }
         return null;
     }
 
-    public static class ImageViewHolder extends RecyclerView.ViewHolder {
+    static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        ImageButton removeButton;
+        Button removeButton;
 
-        public ImageViewHolder(@NonNull View itemView, OnImageRemoveListener listener) {
+        ImageViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.imagePreview);
+            imageView = itemView.findViewById(R.id.imageView);
             removeButton = itemView.findViewById(R.id.buttonRemoveImage);
-
-            removeButton.setOnClickListener(v -> {
-                if (listener != null) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        listener.onRemove(position);
-                    }
-                }
-            });
         }
     }
 }

@@ -1,7 +1,5 @@
 package com.example.gearup.uiactivities.admin;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,17 +13,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PendingApprovalAdapter extends RecyclerView.Adapter<PendingApprovalAdapter.ViewHolder> {
+    private static final String TAG = "PendingApprovalAdapter";
+    private List<PendingApproval> pendingUsers;
+    private final OnViewDetailsClickListener listener;
 
-    private List<PendingApproval> pendingApprovals;
-    private final OnApproveClickListener approveClickListener;
-
-    public PendingApprovalAdapter(List<PendingApproval> pendingApprovals, OnApproveClickListener listener) {
-        this.pendingApprovals = pendingApprovals != null ? pendingApprovals : new ArrayList<>();
-        this.approveClickListener = listener;
+    public interface OnViewDetailsClickListener {
+        void onViewDetailsClick(PendingApproval user);
     }
 
-    public void updateList(List<PendingApproval> newList) {
-        this.pendingApprovals = newList != null ? newList : new ArrayList<>();
+    public PendingApprovalAdapter(List<PendingApproval> pendingUsers, OnViewDetailsClickListener listener) {
+        this.pendingUsers = pendingUsers != null ? pendingUsers : new ArrayList<>();
+        this.listener = listener;
+        Log.d(TAG, "Adapter initialized with " + this.pendingUsers.size() + " users");
+    }
+
+    public void updateList(List<PendingApproval> newUsers) {
+        Log.d(TAG, "Updating list with " + (newUsers != null ? newUsers.size() : 0) + " users");
+        this.pendingUsers = newUsers != null ? new ArrayList<>(newUsers) : new ArrayList<>();
         notifyDataSetChanged();
     }
 
@@ -39,67 +43,34 @@ public class PendingApprovalAdapter extends RecyclerView.Adapter<PendingApproval
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        PendingApproval approval = pendingApprovals.get(position);
-        holder.bind(approval, approveClickListener);
+        PendingApproval user = pendingUsers.get(position);
+        Log.d(TAG, "Binding user: " + user.getFullName() + ", ID: " + user.getId() + " at position " + position);
+        holder.textViewName.setText(user.getFullName());
+        holder.textViewEmail.setText(user.getEmail());
+        holder.textViewUserType.setText(user.getUserType());
+        holder.buttonViewDetails.setOnClickListener(v -> {
+            Log.d(TAG, "View details clicked for user: " + user.getId());
+            listener.onViewDetailsClick(user);
+        });
     }
 
     @Override
     public int getItemCount() {
-        return pendingApprovals.size();
+        int count = pendingUsers.size();
+        Log.d(TAG, "getItemCount: " + count);
+        return count;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView nameTextView;
-        private final TextView emailTextView;
-        private final TextView phoneTextView;
-        private final TextView documentStatusTextView;
-        private final TextView videoStatusTextView;
-        private final Button viewDetailsButton;
-        private final Button approveButton;
-        private final Button rejectButton;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView textViewName, textViewEmail, textViewUserType;
+        Button buttonViewDetails;
 
-        public ViewHolder(View view) {
-            super(view);
-            nameTextView = view.findViewById(R.id.textViewName);
-            emailTextView = view.findViewById(R.id.textViewEmail);
-            phoneTextView = view.findViewById(R.id.textViewPhone);
-            documentStatusTextView = view.findViewById(R.id.textViewDocumentStatus);
-            videoStatusTextView = view.findViewById(R.id.textViewVideoStatus);
-            viewDetailsButton = view.findViewById(R.id.buttonViewDetails);
-            approveButton = view.findViewById(R.id.buttonApprove);
-            rejectButton = view.findViewById(R.id.buttonReject);
-        }
-
-        public void bind(PendingApproval approval, OnApproveClickListener listener) {
-            nameTextView.setText(String.format("Name: %s", approval.getFullName()));
-            emailTextView.setText(String.format("Email: %s", approval.getEmail()));
-            phoneTextView.setText(String.format("Phone: %s", approval.getPhone()));
-
-            documentStatusTextView.setText(approval.hasDocument() ? "Document: Available" : "Document: Not submitted");
-            videoStatusTextView.setText(approval.hasVideo() ? "Video: Available" : "Video: Not submitted");
-
-            viewDetailsButton.setOnClickListener(v -> {
-                Intent intent = new Intent(v.getContext(), ManagerDetailsActivity.class);
-                intent.putExtra("manager_id", approval.getId());
-                intent.putExtra("full_name", approval.getFullName());
-                intent.putExtra("email", approval.getEmail());
-                intent.putExtra("phone", approval.getPhone());
-                intent.putExtra("document_url", approval.getDocumentUrl());
-                intent.putExtra("video_url", approval.getStoreVideo());
-                v.getContext().startActivity(intent);
-            });
-
-            approveButton.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onApproveClick(approval);
-                }
-            });
-
-            rejectButton.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onRejectClick(approval.getId());
-                }
-            });
+        ViewHolder(View itemView) {
+            super(itemView);
+            textViewName = itemView.findViewById(R.id.textViewName);
+            textViewEmail = itemView.findViewById(R.id.textViewEmail);
+            textViewUserType = itemView.findViewById(R.id.textViewUserType);
+            buttonViewDetails = itemView.findViewById(R.id.buttonViewDetails);
         }
     }
 }

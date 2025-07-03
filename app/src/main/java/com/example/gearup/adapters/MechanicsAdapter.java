@@ -1,4 +1,4 @@
-package com.example.gearup.uiactivities.customer;
+package com.example.gearup.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;

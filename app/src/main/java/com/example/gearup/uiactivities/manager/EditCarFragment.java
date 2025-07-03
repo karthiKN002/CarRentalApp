@@ -34,11 +34,13 @@ import com.example.gearup.BuildConfig;
 import com.example.gearup.R;
 import com.example.gearup.adapters.ImagePreviewAdapter;
 import com.example.gearup.states.car.CarAvailabilityState;
+import com.example.gearup.uiactivities.manager.ViewCarsFragment;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -47,7 +49,6 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -66,9 +67,10 @@ public class EditCarFragment extends Fragment {
     private TextView textViewRatingCount;
     private RecyclerView imageRecyclerView;
     private ImagePreviewAdapter imagePreviewAdapter;
-    private ArrayList<Uri> newImageUris;
-    private ArrayList<String> existingImageUrls;
-    private ArrayList<String> imagesToDelete;
+    private ArrayList<Uri> newImageUris; // Local images to upload
+    private ArrayList<String> displayImageUrls; // Combined list for adapter (local URIs as strings + remote URLs)
+    private ArrayList<String> existingImageUrls; // Remote Firebase URLs
+    private ArrayList<String> imagesToDelete; // Remote URLs to delete
     private FirebaseFirestore db;
     private FirebaseStorage storage;
     private StorageReference storageRef;
@@ -76,6 +78,8 @@ public class EditCarFragment extends Fragment {
     private String carId;
     private double latitude = 0.0;
     private double longitude = 0.0;
+
+    private FirebaseAuth mAuth;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -102,6 +106,7 @@ public class EditCarFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
+        mAuth = FirebaseAuth.getInstance();
 
         // Initialize UI components
         brandEditText = view.findViewById(R.id.brandEditText);
@@ -122,7 +127,8 @@ public class EditCarFragment extends Fragment {
         newImageUris = new ArrayList<>();
         existingImageUrls = new ArrayList<>();
         imagesToDelete = new ArrayList<>();
-        imagePreviewAdapter = new ImagePreviewAdapter(requireContext(), new ArrayList<>(), position -> confirmImageRemoval(position));
+        displayImageUrls = new ArrayList<>();
+        imagePreviewAdapter = new ImagePreviewAdapter(requireContext(), displayImageUrls, this::confirmImageRemoval);
         imageRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         imageRecyclerView.setAdapter(imagePreviewAdapter);
 
@@ -130,34 +136,30 @@ public class EditCarFragment extends Fragment {
         Bundle bundle = getArguments();
         if (bundle != null) {
             carId = bundle.getString("carId", "");
-            brandEditText.setText(bundle.getString("carBrand", ""));
-            modelEditText.setText(bundle.getString("carModel", ""));
-            seatsEditText.setText(String.valueOf(bundle.getInt("carSeats", 0)));
-            locationEditText.setText(bundle.getString("carLocation", ""));
-            priceEditText.setText(String.format("%.2f", bundle.getDouble("carPrice", 0.0)));
-            descriptionEditText.setText(bundle.getString("carDescription", ""));
-            existingImageUrls = bundle.getStringArrayList("carImageUrls");
-            String state = bundle.getString("state", CarAvailabilityState.AVAILABLE.toString());
-            float rating = bundle.getFloat("rating", 0f);
-            int ratingCount = bundle.getInt("ratingCount", 0);
+            String managerIdFromBundle = bundle.getString("managerId", ""); // From bundle
+            String currentManagerId = mAuth.getCurrentUser().getUid();
 
-            // Set rating and rating count (read-only)
-            carRatingBar.setRating(rating);
-            textViewRatingCount.setText(ratingCount + " ratings");
-
-            // Set availability switch
-            availabilitySwitch.setChecked(state.equals(CarAvailabilityState.AVAILABLE.toString()));
-
-            // Load primary image and previews
-            if (existingImageUrls != null && !existingImageUrls.isEmpty()) {
-                Glide.with(requireContext())
-                        .load(existingImageUrls.get(0))
-                        .placeholder(R.drawable.car_placeholder)
-                        .into(carImage);
-                imagePreviewAdapter.updateImages(new ArrayList<>(existingImageUrls));
-            } else {
-                carImage.setImageResource(R.drawable.car_placeholder);
-            }
+            // Fetch car details to verify ownership
+            db.collection("Cars").document(carId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String carManagerId = documentSnapshot.getString("managerId");
+                            if (carManagerId == null || !carManagerId.equals(currentManagerId)) {
+                                Toast.makeText(requireContext(), "You do not have permission to edit this car", Toast.LENGTH_SHORT).show();
+                                navigateToViewCarsFragment();
+                                return;
+                            }
+                            // Load car data if ownership is verified
+                            loadCarDetails(bundle);
+                        } else {
+                            Toast.makeText(requireContext(), "Car not found", Toast.LENGTH_SHORT).show();
+                            navigateToViewCarsFragment();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(requireContext(), "Failed to verify car ownership: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        navigateToViewCarsFragment();
+                    });
         } else {
             Toast.makeText(requireContext(), "Failed to load car details", Toast.LENGTH_SHORT).show();
             navigateToViewCarsFragment();
@@ -173,6 +175,38 @@ public class EditCarFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void loadCarDetails(Bundle bundle) {
+        brandEditText.setText(bundle.getString("carBrand", ""));
+        modelEditText.setText(bundle.getString("carModel", ""));
+        seatsEditText.setText(String.valueOf(bundle.getInt("carSeats", 0)));
+        locationEditText.setText(bundle.getString("carLocation", ""));
+        priceEditText.setText(String.format("%.2f", bundle.getDouble("carPrice", 0.0)));
+        descriptionEditText.setText(bundle.getString("carDescription", ""));
+        existingImageUrls = bundle.getStringArrayList("carImageUrls");
+        String state = bundle.getString("state", CarAvailabilityState.AVAILABLE.toString());
+        float rating = bundle.getFloat("rating", 0f);
+        int ratingCount = bundle.getInt("ratingCount", 0);
+
+        // Set rating and rating count (read-only)
+        carRatingBar.setRating(rating);
+        textViewRatingCount.setText(ratingCount + " ratings");
+
+        // Set availability switch
+        availabilitySwitch.setChecked(state.equals(CarAvailabilityState.AVAILABLE.toString()));
+
+        // Load primary image and previews
+        if (existingImageUrls != null && !existingImageUrls.isEmpty()) {
+            displayImageUrls.addAll(existingImageUrls);
+            Glide.with(requireContext())
+                    .load(existingImageUrls.get(0))
+                    .placeholder(R.drawable.car_placeholder)
+                    .into(carImage);
+            imagePreviewAdapter.updateImages(new ArrayList<>(displayImageUrls));
+        } else {
+            carImage.setImageResource(R.drawable.car_placeholder);
+        }
     }
 
     private void selectImages() {
@@ -195,26 +229,30 @@ public class EditCarFragment extends Fragment {
                 longitude = place.getLatLng().longitude;
             }
         } else if (requestCode == IMAGE_PICKER_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            ArrayList<Uri> selectedUris = new ArrayList<>();
+            ArrayList<String> selectedUrls = new ArrayList<>();
             if (data.getClipData() != null) {
                 int count = data.getClipData().getItemCount();
                 for (int i = 0; i < count; i++) {
                     Uri uri = data.getClipData().getItemAt(i).getUri();
-                    newImageUris.add(uri);
-                    imagePreviewAdapter.addImage(uri.toString());
+                    selectedUris.add(uri);
+                    selectedUrls.add(uri.toString());
                 }
             } else if (data.getData() != null) {
                 Uri uri = data.getData();
-                newImageUris.add(uri);
-                imagePreviewAdapter.addImage(uri.toString());
+                selectedUris.add(uri);
+                selectedUrls.add(uri.toString());
             }
-            // Update primary image if new images are added
-            if (!newImageUris.isEmpty()) {
+            if (!selectedUris.isEmpty()) {
+                newImageUris.addAll(selectedUris);
+                displayImageUrls.addAll(selectedUrls);
+                imagePreviewAdapter.addImages(selectedUrls);
+                // Update primary image
                 Glide.with(requireContext())
-                        .load(newImageUris.get(0))
+                        .load(selectedUris.get(0))
                         .placeholder(R.drawable.car_placeholder)
                         .into(carImage);
             }
-            imagePreviewAdapter.notifyDataSetChanged();
         }
     }
 
@@ -324,6 +362,7 @@ public class EditCarFragment extends Fragment {
         carData.put("longitude", longitude);
         carData.put("images", images);
         carData.put("state", state);
+        carData.put("managerId", mAuth.getCurrentUser().getUid()); // Ensure managerId is updated
         carData.put("updatedAt", FieldValue.serverTimestamp());
 
         db.collection("Cars").document(carId)
@@ -339,34 +378,44 @@ public class EditCarFragment extends Fragment {
 
     private void confirmImageRemoval(int position) {
         String imageUrl = imagePreviewAdapter.getImageAt(position);
-        if (imageUrl == null) return;
+        if (imageUrl == null) {
+            Toast.makeText(requireContext(), "Invalid image", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Remove Image")
                 .setMessage("Are you sure you want to remove this image?")
                 .setPositiveButton("Yes", (dialog, which) -> {
-                    if (imageUrl.startsWith("content://") || imageUrl.startsWith("file://")) {
-                        Iterator<Uri> iterator = newImageUris.iterator();
-                        while (iterator.hasNext()) {
-                            Uri uri = iterator.next();
-                            if (uri.toString().equals(imageUrl)) {
-                                iterator.remove();
-                            }
+                    // Check if the image is local (Uri) or remote (Firebase URL)
+                    boolean isLocalImage = false;
+                    int uriIndex = -1;
+                    for (int i = 0; i < newImageUris.size(); i++) {
+                        if (newImageUris.get(i).toString().equals(imageUrl)) {
+                            isLocalImage = true;
+                            uriIndex = i;
+                            break;
                         }
+                    }
+
+                    if (isLocalImage) {
+                        // Remove from local images
+                        newImageUris.remove(uriIndex);
                     } else {
+                        // Mark remote image for deletion
                         imagesToDelete.add(imageUrl);
                         existingImageUrls.remove(imageUrl);
                     }
+
+                    // Remove from display list and update adapter
+                    displayImageUrls.remove(position);
                     imagePreviewAdapter.removeImage(position);
-                    // Update primary image if removed
-                    if (!existingImageUrls.isEmpty()) {
+
+                    // Update primary image
+                    if (!displayImageUrls.isEmpty()) {
+                        String nextImage = displayImageUrls.get(0);
                         Glide.with(requireContext())
-                                .load(existingImageUrls.get(0))
-                                .placeholder(R.drawable.car_placeholder)
-                                .into(carImage);
-                    } else if (!newImageUris.isEmpty()) {
-                        Glide.with(requireContext())
-                                .load(newImageUris.get(0))
+                                .load(nextImage)
                                 .placeholder(R.drawable.car_placeholder)
                                 .into(carImage);
                     } else {

@@ -25,9 +25,11 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.gearup.R;
 import com.example.gearup.adapters.CarImageAdapter;
+import com.example.gearup.models.Car;
 import com.example.gearup.states.car.CarAvailabilityState;
 import com.example.gearup.states.contract.ContractState;
 import com.example.gearup.utilities.GoogleCalendarHelper;
+import com.example.gearup.BuildConfig;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -59,10 +61,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import com.example.gearup.BuildConfig;
 
 public class RentCarFragment extends Fragment {
 
+    private static final String TAG = "RentCarFragment";
     private EditText startDateTimeEditText, endDateTimeEditText;
     private Button rentButton;
     private FirebaseFirestore db;
@@ -72,13 +74,11 @@ public class RentCarFragment extends Fragment {
     private double pricePerDay;
     private double totalPayment;
     private Date startDate, endDate;
-    //-----------stripe
     private PaymentSheet paymentSheet;
     private String paymentIntentClientSecret;
-    private String publishableKey;
     private OkHttpClient client = new OkHttpClient();
     private PaymentSheet.CustomerConfiguration customerConfig;
-
+    private static final String BACKEND_URL = "http://192.168.0.112:4242";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,17 +87,13 @@ public class RentCarFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         initializeCalendarHelper();
 
-
-        // Initialize Stripe SDK with the publishableKey from BuildConfig
         if (TextUtils.isEmpty(BuildConfig.STRIPE_PUBLISHABLE_KEY)) {
-            Log.e("RentCarFragment", "Stripe publishable key is missing");
+            Log.e(TAG, "Stripe publishable key is missing");
             Toast.makeText(getContext(), "Payment configuration error", Toast.LENGTH_SHORT).show();
             return;
         }
-        publishableKey = BuildConfig.STRIPE_PUBLISHABLE_KEY;
-        PaymentConfiguration.init(getContext(), publishableKey);
+        PaymentConfiguration.init(getContext(), BuildConfig.STRIPE_PUBLISHABLE_KEY);
         paymentSheet = new PaymentSheet(this, this::onPaymentSheetResult);
-
     }
 
     @Nullable
@@ -106,12 +102,10 @@ public class RentCarFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_rent_car, container, false);
     }
 
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Bind views
         ViewPager2 carImageSlider = view.findViewById(R.id.carImageSlider);
         TextView carBrandModelTextView = view.findViewById(R.id.carBrandModel);
         TextView carDescriptionTextView = view.findViewById(R.id.carDescription);
@@ -125,15 +119,6 @@ public class RentCarFragment extends Fragment {
         endDateTimeEditText = view.findViewById(R.id.endDateTimeEditText);
         rentButton = view.findViewById(R.id.rentButton);
 
-        PaymentConfiguration.init(
-                requireContext(),
-                "pk_test_51R4G3sGDA6z1HzAN9tHO0HdQfk2SqETFZPxOIxfqbRTVsRexjwKVeWYCRr9RyW2LkDpKizE15KUD4tU8jzqoRB5a00VB9OCjZ4" // From your local.properties
-        );
-
-
-
-
-        // Retrieve car data from arguments
         Bundle bundle = getArguments();
         if (bundle != null) {
             carId = bundle.getString("carId");
@@ -145,32 +130,26 @@ public class RentCarFragment extends Fragment {
             float carRating = bundle.getFloat("carRating");
             ArrayList<String> carImageUrls = bundle.getStringArrayList("carImageUrls");
 
-            // Populate UI elements with car data
             carBrandModelTextView.setText(carBrandModel);
             carDescriptionTextView.setText(carDescription);
             carLocationTextView.setText("Location: " + carLocation);
             carSeatsTextView.setText("Seats: " + carSeats);
-            carPriceTextView.setText("Price per day: $" + pricePerDay);
+            carPriceTextView.setText(String.format(Locale.US, "Price per day: ₹%.2f", pricePerDay));
             carRatingBar.setRating(carRating);
-            ratingCountTextView.setText(String.format("%.1f", carRating));
+            ratingCountTextView.setText(String.format(Locale.US, "%.1f", carRating));
 
-            // Set up the image slider
             if (carImageUrls != null && !carImageUrls.isEmpty()) {
                 CarImageAdapter adapter = new CarImageAdapter(getContext(), carImageUrls);
                 carImageSlider.setAdapter(adapter);
             } else {
-                carImage.setImageResource(R.drawable.car_placeholder); // Fallback if no image URL is available
+                carImage.setImageResource(R.drawable.car_placeholder);
             }
-
         }
-
 
         startDateTimeEditText.setOnClickListener(v -> showDateTimePicker(startDateTimeEditText));
         endDateTimeEditText.setOnClickListener(v -> showDateTimePicker(endDateTimeEditText));
-
         rentButton.setOnClickListener(v -> rentCar());
     }
-
 
     private void rentCar() {
         String startDateStr = startDateTimeEditText.getText().toString();
@@ -184,34 +163,129 @@ public class RentCarFragment extends Fragment {
             return;
         }
 
+        long days = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (days <= 0) {
+            Toast.makeText(getContext(), "Rental period must be at least one day", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        totalPayment = pricePerDay * days;
 
-        // Calculate total payment based on the rental period
-        totalPayment = pricePerDay * ((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        Log.d("RentCarFragment", "Renting car with ID: " + carId);
+        Log.d(TAG, "Renting car ID: " + carId + ", Total: ₹" + totalPayment);
         fetchPaymentSheetConfig();
     }
 
+    private void fetchPaymentSheetConfig() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String email = currentUser.getEmail();
+        String name = currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "Customer";
+
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("email", email);
+            jsonBody.put("name", name);
+            jsonBody.put("totalAmount", (long) (totalPayment * 100)); // Convert to paisa
+            jsonBody.put("currency", "inr");
+        } catch (JSONException e) {
+            Log.e(TAG, "JSON error: " + e.getMessage());
+            Toast.makeText(getContext(), "Error preparing payment", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        RequestBody body = RequestBody.create(jsonBody.toString(), MediaType.parse("application/json"));
+        Request request = new Request.Builder()
+                .url(BACKEND_URL + "/payment-sheet")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.e(TAG, "Network failure: " + e.getMessage());
+                runOnUiThread(() -> Toast.makeText(getContext(), "Network error: Unable to fetch payment config", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e(TAG, "Server error: " + response.code());
+                    runOnUiThread(() -> Toast.makeText(getContext(), "Server error: Unable to fetch payment config", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
+                try {
+                    String responseBody = response.body().string();
+                    JSONObject responseJson = new JSONObject(responseBody);
+                    paymentIntentClientSecret = responseJson.getString("paymentIntent");
+                    String customerId = responseJson.getString("customer");
+                    String ephemeralKey = responseJson.getString("ephemeralKey");
+
+                    Log.d(TAG, "Payment config fetched: paymentIntent=" + paymentIntentClientSecret + ", customer=" + customerId);
+                    customerConfig = new PaymentSheet.CustomerConfiguration(customerId, ephemeralKey);
+                    runOnUiThread(() -> presentPaymentSheet());
+                } catch (JSONException e) {
+                    Log.e(TAG, "JSON parse error: " + e.getMessage());
+                    runOnUiThread(() -> Toast.makeText(getContext(), "Error parsing payment config", Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
+    }
+
+    private void presentPaymentSheet() {
+        if (customerConfig != null && paymentIntentClientSecret != null) {
+            paymentSheet.presentWithPaymentIntent(
+                    paymentIntentClientSecret,
+                    new PaymentSheet.Configuration(
+                            "CarRentalApp",
+                            customerConfig,
+                            new PaymentSheet.GooglePayConfiguration(
+                                    PaymentSheet.GooglePayConfiguration.Environment.Test,
+                                    "IN",
+                                    "INR"
+                            )
+                    )
+            );
+        } else {
+            Log.e(TAG, "Payment sheet config missing");
+            Toast.makeText(getContext(), "Payment setup incomplete", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void onPaymentSheetResult(PaymentSheetResult paymentSheetResult) {
+        if (paymentSheetResult instanceof PaymentSheetResult.Completed) {
+            Log.d(TAG, "Payment successful");
+            runOnUiThread(() -> {
+                Toast.makeText(getContext(), "Payment Successful!", Toast.LENGTH_SHORT).show();
+                createEventAndSaveContract(startDate, endDate);
+            });
+        } else if (paymentSheetResult instanceof PaymentSheetResult.Canceled) {
+            Log.d(TAG, "Payment canceled");
+            runOnUiThread(() -> Toast.makeText(getContext(), "Payment Canceled", Toast.LENGTH_SHORT).show());
+        } else if (paymentSheetResult instanceof PaymentSheetResult.Failed) {
+            PaymentSheetResult.Failed failedResult = (PaymentSheetResult.Failed) paymentSheetResult;
+            Log.e(TAG, "Payment failed: " + failedResult.getError().getMessage());
+            runOnUiThread(() -> Toast.makeText(getContext(), "Payment Failed: " + failedResult.getError().getMessage(), Toast.LENGTH_LONG).show());
+        }
+    }
+
     private void createEventAndSaveContract(Date startDate, Date endDate) {
-        //Check if calendarHelper is initialized
-        if(calendarHelper == null) {
-            Log.w("RentCarFragment", "No Google Calendar account detected. Skipping event creation.");
-            saveContractToFirestore(null, startDate, endDate); // Proceed without calendar event
+        if (calendarHelper == null) {
+            Log.w(TAG, "No Google Calendar account detected. Skipping event creation.");
+            saveContractToFirestore(null, startDate, endDate);
             return;
         }
         new Thread(() -> {
             try {
                 eventId = calendarHelper.createEvent("Rent Car ID: " + carId, startDate, endDate);
-                Log.d("RentCarFragment", "Calendar event created successfully with ID: " + eventId);
+                Log.d(TAG, "Calendar event created with ID: " + eventId);
             } catch (Exception e) {
-                Log.e("RentCarFragment", "Failed to create calendar event: " + e.getMessage());
-                eventId = null; // Null event ID indicates calendar event creation failed
+                Log.e(TAG, "Failed to create calendar event: " + e.getMessage());
+                eventId = null;
             }
-
-            //Proceed with saving the contract regardless of event creation success
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> saveContractToFirestore(eventId, startDate, endDate));
-            }
+            runOnUiThread(() -> saveContractToFirestore(eventId, startDate, endDate));
         }).start();
     }
 
@@ -223,50 +297,94 @@ public class RentCarFragment extends Fragment {
         }
 
         String userId = currentUser.getUid();
-        //totalPayment = pricePerDay * ((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        // Fetch the car to get the managerId
+        db.collection("Cars").document(carId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Car car = documentSnapshot.toObject(Car.class);
+                        if (car == null || car.getManagerId() == null) {
+                            Toast.makeText(getContext(), "Failed to fetch car details", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
-        Map<String, Object> contractData = new HashMap<>();
-        contractData.put("userId", userId);
-        contractData.put("carId", carId);
-        contractData.put("createdAt", Timestamp.now());
-        contractData.put("startDate", new Timestamp(startDate));
-        contractData.put("endDate", new Timestamp(endDate));
-        contractData.put("updateDate", null);
-        contractData.put("totalPayment", totalPayment);
-        contractData.put("status", ContractState.ACTIVE);
-        contractData.put("eventId", eventId);
-        contractData.put("rated", false);
+                        Map<String, Object> contractData = new HashMap<>();
+                        contractData.put("userId", userId); // This is the customer ID
+                        contractData.put("carId", carId);
+                        contractData.put("managerId", car.getManagerId()); // Add managerId
+                        contractData.put("createdAt", Timestamp.now());
+                        contractData.put("startDate", new Timestamp(startDate));
+                        contractData.put("endDate", new Timestamp(endDate));
+                        contractData.put("updateDate", null);
+                        contractData.put("totalPayment", totalPayment);
+                        contractData.put("status", ContractState.ACTIVE);
+                        contractData.put("eventId", eventId);
+                        contractData.put("rated", false);
 
-        db.collection("Contracts").add(contractData)
-                .addOnSuccessListener(documentReference -> {
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(), "Contract saved successfully.", Toast.LENGTH_SHORT).show();
-
-                        //Update car state to UNAVAILABLE
-                        db.collection("Cars").document(carId).update("state", CarAvailabilityState.UNAVAILABLE.toString())
-                                .addOnSuccessListener(aVoid -> {
-                                    Log.d("RentCarFragment", "Car state updated to UNAVAILABLE");
+                        db.collection("Contracts").add(contractData)
+                                .addOnSuccessListener(documentReference -> {
+                                    Toast.makeText(getContext(), "Contract saved successfully.", Toast.LENGTH_SHORT).show();
+                                    db.collection("Cars").document(carId).update("state", CarAvailabilityState.UNAVAILABLE.toString())
+                                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Car state updated to UNAVAILABLE"))
+                                            .addOnFailureListener(e -> Log.e(TAG, "Failed to update car state: " + e.getMessage()));
+                                    // Send notification to manager
+                                    sendNotificationToManager(car.getManagerId());
+                                    navigateToViewContractsFragment();
                                 })
-                                .addOnFailureListener(e -> {
-                                   Log.e("Rentcarfragment", "Failed to update car state: " + e.getMessage());
-                                });
-
-                        // Navigate to ViewContractsFragment
-                        navigateToViewContractsFragment();
+                                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to save contract: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    } else {
+                        Toast.makeText(getContext(), "Car not found", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .addOnFailureListener(e -> {
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(), "Failed to save contract: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to fetch car: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+    private void sendNotificationToManager(String managerId) {
+        db.collection("Users").document(managerId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    String managerFcmToken = document.getString("fcmToken");
+                    if (managerFcmToken != null) {
+                        sendFcmNotification(managerFcmToken, "Car Booked", "Your car with ID " + carId + " has been booked!");
                     }
                 });
+    }
+
+    private void sendFcmNotification(String token, String title, String body) {
+        JSONObject json = new JSONObject();
+        try {
+            JSONObject notification = new JSONObject();
+            notification.put("title", title);
+            notification.put("body", body);
+            json.put("notification", notification);
+            json.put("to", token);
+            RequestBody requestBody = RequestBody.create(json.toString(), MediaType.parse("application/json"));
+            Request request = new Request.Builder()
+                    .url("https://fcm.googleapis.com/fcm/send")
+                    .post(requestBody)
+                    .addHeader("Authorization", "key=YOUR_FCM_SERVER_KEY")
+                    .build();
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.e(TAG, "Failed to send notification: " + e.getMessage());
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (!response.isSuccessful()) {
+                        Log.e(TAG, "Notification send failed: " + response.code());
+                    }
+                }
+            });
+        } catch (JSONException e) {
+            Log.e(TAG, "JSON error in notification: " + e.getMessage());
+        }
     }
 
     private Date parseDate(String dateString) {
         try {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).parse(dateString);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Date parse error: " + e.getMessage());
             return null;
         }
     }
@@ -304,10 +422,10 @@ public class RentCarFragment extends Fragment {
                     getContext(), Collections.singleton(CalendarScopes.CALENDAR));
             credential.setSelectedAccountName(accountName);
             calendarHelper = new GoogleCalendarHelper(credential);
-            Log.d("RentCarFragment", "Google Calendar credential initialized with account: " + accountName);
+            Log.d(TAG, "Google Calendar credential initialized with account: " + accountName);
         } else {
-            calendarHelper = null; // No calendar available
-            Log.e("RentCarFragment", "Google account name is missing; cannot initialize Google Calendar.");
+            calendarHelper = null;
+            Log.w(TAG, "Google account name missing; cannot initialize Google Calendar.");
             Toast.makeText(getContext(), "Google Calendar setup failed. Please re-login.", Toast.LENGTH_SHORT).show();
         }
     }
@@ -321,128 +439,9 @@ public class RentCarFragment extends Fragment {
                 .commit();
     }
 
-    //-------Stripe: make a network request to the server
-    private void fetchPaymentSheetConfig() {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        String email = currentUser.getEmail();
-        String name = currentUser.getDisplayName();
-
-
-        JSONObject jsonBody = new JSONObject();
-        try {
-            jsonBody.put("email", email);
-            jsonBody.put("name", name);
-            jsonBody.put("totalAmount", totalPayment * 100);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return;
-        }
-        RequestBody body = RequestBody.create(jsonBody.toString(), MediaType.parse("application/json"));
-
-        Request request = new Request.Builder()
-                .url("http://10.0.2.2:4242/payment-sheet") // Emulator endpoint for localhost
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() ->
-                            Toast.makeText(getContext(), "Failed to fetch payment config", Toast.LENGTH_SHORT).show()
-                    );
-                }
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful() && response.body() != null) {
-                    try {
-                        JSONObject responseJson = new JSONObject(response.body().string());
-                        paymentIntentClientSecret = responseJson.getString("paymentIntent");
-                        String customerId = responseJson.getString("customer");
-                        String ephemeralKey = responseJson.getString("ephemeralKey");
-                        String publishableKey = responseJson.getString("publishableKey");
-
-                        // Log and Toast the fetched information
-                        Log.d("RentCarFragment", "Fetched payment configuration successfully.");
-                        Log.d("RentCarFragment", "paymentIntentClientSecret: " + paymentIntentClientSecret);
-                        Log.d("RentCarFragment", "customerId: " + customerId);
-                        Log.d("RentCarFragment", "ephemeralKey: " + ephemeralKey);
-                        Log.d("RentCarFragment", "publishableKey: " + publishableKey);
-
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() ->
-                                    Toast.makeText(getContext(), "Payment config fetched successfully", Toast.LENGTH_SHORT).show()
-                            );
-                        }
-
-                        // Initialize PaymentConfiguration with the publishableKey
-                        PaymentConfiguration.init(getContext(), publishableKey);
-
-                        // Set up customerConfig for PaymentSheet
-                        customerConfig = new PaymentSheet.CustomerConfiguration(customerId, ephemeralKey);
-
-                        // After fetching, call the method to present PaymentSheet
-                        presentPaymentSheet();
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(() ->
-                                Toast.makeText(getContext(), "Error: Unable to fetch payment config", Toast.LENGTH_SHORT).show()
-                        );
-                    }
-                }
-            }
-        });
-    }
-
-    private void presentPaymentSheet() {
-        if (customerConfig != null && paymentIntentClientSecret != null) {
-            paymentSheet.presentWithPaymentIntent(
-                    paymentIntentClientSecret,
-                    new PaymentSheet.Configuration(
-                            "CarRentalApp", // Business name displayed on PaymentSheet
-                            customerConfig
-                    )
-            );
+    private void runOnUiThread(Runnable runnable) {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(runnable);
         }
     }
-
-    private void onPaymentSheetResult(PaymentSheetResult paymentSheetResult) {
-        if (paymentSheetResult instanceof PaymentSheetResult.Completed) {
-            // Payment successful
-            if (getActivity() != null) { // Null check for the activity context
-                getActivity().runOnUiThread(() -> {
-                    Toast.makeText(getContext(), "Payment Successful!", Toast.LENGTH_SHORT).show();
-
-                    // Call the method to create contract and calendar event after successful payment
-                    createEventAndSaveContract(startDate, endDate);
-
-                });
-            }
-        } else if (paymentSheetResult instanceof PaymentSheetResult.Canceled) {
-            if (getActivity() != null) { // Null check
-                getActivity().runOnUiThread(() ->
-                        Toast.makeText(getContext(), "Payment Canceled", Toast.LENGTH_SHORT).show()
-                );
-            }
-        } else if (paymentSheetResult instanceof PaymentSheetResult.Failed) {
-            if (getActivity() != null) { // Null check
-                getActivity().runOnUiThread(() -> {
-                    PaymentSheetResult.Failed failedResult = (PaymentSheetResult.Failed) paymentSheetResult;
-                    Toast.makeText(getContext(), "Payment Failed: " , Toast.LENGTH_SHORT).show();
-                });
-            }
-        }
-    }
-
 }

@@ -67,8 +67,7 @@ public class ViewContractDetailsFragment extends Fragment {
             startDateTextView.setText(formatTimestamp(startDate));
             endDateTextView.setText(formatTimestamp(endDate));
             createdAtTextView.setText(formatTimestamp(createdAt));
-            totalPaymentTextView.setText("Total Payment: $" + totalPayment);
-            statusTextView.setText(status);
+            totalPaymentTextView.setText(String.format(Locale.getDefault(), "Total Payment: ₹%.2f", totalPayment));            statusTextView.setText(status);
 
         } else {
             Toast.makeText(getContext(), "Failed to load contract details", Toast.LENGTH_SHORT).show();

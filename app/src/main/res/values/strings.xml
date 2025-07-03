@@ -26,6 +26,9 @@
     <string name="user">User</string>
     <string name="upload_rental_license">Upload Rental License</string>
 
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
     <!-- Firebase Configuration -->
     <string name="google_app_id">1:101337695040:android:4f6e763f34de49e295f0a5</string>
     <string name="google_config_api_key">AIzaSyDvAWPoyJTf_aTv27hqU3zFDBTKg3Xwe9E</string>

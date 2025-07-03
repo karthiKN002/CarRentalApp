@@ -14,16 +14,17 @@
         android:layout_gravity="center_vertical">
 
         <!-- App Logo -->
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/logocar_2"
-            android:contentDescription="App Logo"
-            android:layout_marginBottom="24dp" />
 
         <!-- Email Input Field -->
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="127dp"
+            android:layout_height="127dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="App Logo"
+            android:src="@drawable/logocar_2" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

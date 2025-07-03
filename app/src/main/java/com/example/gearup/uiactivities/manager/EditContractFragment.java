@@ -94,14 +94,48 @@ public class EditContractFragment extends Fragment {
             endDateTextView.setText(formatTimestamp(endDate));
             createdAtTextView.setText(formatTimestamp(createdAt));
             updatedAtTextView.setText(formatTimestamp(updateDate));
-            totalPaymentTextView.setText(String.format(Locale.getDefault(), "$%.2f", totalPayment));
+            totalPaymentTextView.setText(String.format(Locale.getDefault(), "₹%.2f", totalPayment));
             statusTextView.setText(currentStatus.toString());
 
-            setupStatusToggle();
+            // Check if contract has expired
+            if (currentStatus == ContractState.ACTIVE && endDate != null && isContractExpired(endDate)) {
+                updateContractStatusToCompleted();
+            } else {
+                setupStatusToggle();
+            }
+
             buttonUpdateStatus.setOnClickListener(v -> updateContractStatus());
         } else {
             Toast.makeText(requireContext(), "Failed to load contract details", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private boolean isContractExpired(Timestamp endDate) {
+        Date currentDate = new Date();
+        return endDate.toDate().before(currentDate);
+    }
+
+    private void updateContractStatusToCompleted() {
+        newStatus = ContractState.COMPLETED;
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("status", newStatus.toString());
+        updates.put("updateDate", FieldValue.serverTimestamp());
+
+        db.collection("Contracts").document(contractId).update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(requireContext(), "Contract automatically updated to COMPLETED due to expiration", Toast.LENGTH_SHORT).show();
+                    String carId = carIdTextView.getText().toString();
+                    if (!TextUtils.isEmpty(carId) && !"N/A".equals(carId)) {
+                        updateCarStatusToAvailable(carId);
+                    }
+                    statusTextView.setText(newStatus.toString());
+                    setupStatusToggle(); // Update UI to reflect new status
+                    getParentFragmentManager().setFragmentResult("contractUpdated", new Bundle());
+                    navigateToViewContractFragment();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Failed to update contract: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void setupStatusToggle() {
@@ -176,6 +210,8 @@ public class EditContractFragment extends Fragment {
                         }
                     }
 
+                    statusTextView.setText(newStatus.toString());
+                    setupStatusToggle(); // Update UI
                     getParentFragmentManager().setFragmentResult("contractUpdated", new Bundle());
                     navigateToViewContractFragment();
                 })

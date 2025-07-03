@@ -6,6 +6,7 @@ public class User {
     protected String uid;
     protected String fullName;
     protected String email;
+    private String fcmToken;
     protected String phoneNumber;
     protected String userType;
     protected Timestamp createdAt;
@@ -57,4 +58,6 @@ public class User {
     public void setLicenseDocument(String licenseDocument) { this.licenseDocument = licenseDocument; }
     public Integer getPoints() { return points; }
     public void setPoints(Integer points) { this.points = points; }
+    public String getFcmToken() { return fcmToken; }
+    public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
 }

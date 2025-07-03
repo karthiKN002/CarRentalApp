@@ -28,7 +28,6 @@
             android:textStyle="bold"
             android:textColor="@color/black" />
 
-        <!-- Car Location with Icon -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -53,7 +52,6 @@
                 android:textColor="@color/black" />
         </LinearLayout>
 
-        <!-- Car Seats with Icon -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -103,7 +101,6 @@
                 android:visibility="gone"/>
         </LinearLayout>
 
-        <!-- Car Price with Icon -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -113,12 +110,11 @@
 
             <ImageView
                 android:id="@+id/icPrice"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/ic_price"
+                android:layout_width="match_parent"
+                android:layout_height="11dp"
                 android:contentDescription="@string/price_icon_description"
+                android:src="@drawable/ic_price"
                 app:tint="@color/colorMoneyGreen" />
-
 
             <TextView
                 android:id="@+id/carPrice"
@@ -171,9 +167,10 @@
         android:id="@+id/actionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Action"
+        android:text="Edit"
         android:textSize="14sp"
         android:backgroundTint="@color/primaryColor"
         android:textColor="@android:color/white"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:visibility="gone" />
 </LinearLayout>

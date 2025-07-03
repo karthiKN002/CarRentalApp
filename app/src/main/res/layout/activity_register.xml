@@ -1,97 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#F5F5F5"
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- All fields from Full Name to OTP Layout remain the same -->
+
         <EditText
             android:id="@+id/editTextFullName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:background="@android:drawable/edit_text"
-            android:hint="Full Name"
-            android:inputType="textPersonName"
-            android:padding="12dp" />
+            android:hint="Full Name" />
 
         <EditText
             android:id="@+id/editTextEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:background="@android:drawable/edit_text"
             android:hint="Email"
-            android:inputType="textEmailAddress"
-            android:padding="12dp" />
+            android:inputType="textEmailAddress" />
 
         <EditText
             android:id="@+id/editTextPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:background="@android:drawable/edit_text"
             android:hint="Password"
-            android:inputType="textPassword"
-            android:padding="12dp" />
+            android:inputType="textPassword" />
 
         <EditText
             android:id="@+id/editTextPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:background="@android:drawable/edit_text"
             android:hint="Phone Number"
-            android:inputType="phone"
-            android:padding="12dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="4dp"
-            android:text="Select User Type"
-            android:textColor="#424242"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <RadioGroup
-            android:id="@+id/radioGroupUserType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/radioCustomer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:checked="true"
-                android:text="Customer" />
-
-            <RadioButton
-                android:id="@+id/radioManager"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Manager" />
-        </RadioGroup>
+            android:inputType="phone" />
 
         <Button
             android:id="@+id/buttonSendOtp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="#2196F3"
-            android:text="Send OTP"
-            android:textColor="#FFFFFF" />
+            android:text="Send OTP" />
 
         <LinearLayout
             android:id="@+id/otpLayout"
@@ -104,193 +54,171 @@
                 android:id="@+id/editTextOtp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@android:drawable/edit_text"
                 android:hint="Enter OTP"
-                android:inputType="number"
-                android:padding="12dp" />
+                android:inputType="number" />
 
             <Button
                 android:id="@+id/buttonVerifyOtp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:backgroundTint="#4CAF50"
-                android:text="Verify OTP"
-                android:textColor="#FFFFFF" />
+                android:text="Verify OTP" />
 
             <Button
                 android:id="@+id/buttonResendOtp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:backgroundTint="#6F6B6A"
-                android:text="Resend OTP"
-                android:textColor="#FFFFFF" />
+                android:text="Resend OTP" />
         </LinearLayout>
-
-        <!-- Document Upload Section -->
-        <TextView
-            android:id="@+id/uploadDocDescription"
+        <RadioGroup
+            android:id="@+id/radioGroupUserType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            android:text="Please upload your store license (PDF, max 5MB)"
-            android:textColor="#616161"
-            android:textSize="14sp"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/radioCustomer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Customer" />
+            <RadioButton
+                android:id="@+id/radioManager"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Manager" />
+            <RadioButton
+                android:id="@+id/radioMechanic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mechanic" />
+        </RadioGroup>
+
+
+        <EditText
+            android:id="@+id/editTextLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Location"
+            android:inputType="text" />
 
         <Button
-            android:id="@+id/buttonUploadDoc"
+            android:id="@+id/buttonSelectLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="#4CAF50"
-            android:text="Upload Store License"
-            android:textColor="#FFFFFF"
-            android:visibility="gone"
-            tools:visibility="visible"/>
-
-
-        <!-- NEW: Layout to trigger video recording -->
-        <LinearLayout
-            android:id="@+id/videoActionLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingBottom="4dp"
-                android:text="Verification Video"
-                android:textColor="#424242"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                tools:visibility="visible"/>
-
-            <TextView
-                android:id="@+id/textViewVideoCaution"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="#FFFDE7"
-                android:padding="8dp"
-                android:text="Caution: Video must clearly show you performing authorized operations, like opening the store or accessing restricted items."
-                android:textColor="#6D4C41"
-                tools:visibility="visible" />
-
-            <Button
-                android:id="@+id/buttonShowCamera"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Record Verification Video"
-                tools:visibility="visible"/>
-
-
-        </LinearLayout>
-
-        <!-- Video Recording Preview Section -->
-        <LinearLayout
-            android:id="@+id/videoRecordingLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="500dp"
-                android:layout_gravity="center"
-                android:background="#000000">
-
-                <!-- Camera Preview -->
-                <SurfaceView
-                    android:id="@+id/surfaceViewCamera"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center" />
-
-                <!-- Timer Display -->
-                <TextView
-                    android:id="@+id/textViewTimer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="00:00"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#FF0000"
-                    android:layout_gravity="top|center_horizontal"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone" />
-
-                <!-- Start/Stop Buttons Over Camera -->
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="24dp">
-
-                    <View
-                        android:id="@+id/buttonStartRecording"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:background="@drawable/ic_record"
-                        android:backgroundTint="@null"
-                        android:visibility="visible"
-                        tools:visibility="visible" />
-
-                    <View
-                        android:id="@+id/buttonStopRecording"
-
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:background="@drawable/ic_stop"
-                        android:backgroundTint="@null"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
-                </FrameLayout>
-
-            </FrameLayout>
-
-
-
-
-        </LinearLayout>
+            android:text="Pin Location on Map" />
 
         <TextView
-            android:id="@+id/textViewVideoStatus"
+            android:id="@+id/uploadAadharDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:text="Video Recorded ✓"
-            android:textColor="#4CAF50"
-            android:textStyle="bold"
+            android:text="Upload Aadhar Card (PDF)"
             android:visibility="gone" />
 
-        <!-- Register Button -->
+        <Button
+            android:id="@+id/buttonUploadAadhar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload Aadhar"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/uploadPanDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload PAN Card (PDF)"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonUploadPan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload PAN"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/uploadLicenseDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload Rent-a-Cab License (PDF)"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonUploadLicense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload License"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/uploadPassbookDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload Passbook Image (JPEG/PNG)"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonUploadPassbook"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload Passbook"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/uploadPhotoDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload Passport-like Photo (JPEG/PNG)"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonUploadMechanicPhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload Photo"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/editTextBankAccount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Bank Account Number"
+            android:inputType="number"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/editTextIfscCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="IFSC Code"
+            android:inputType="text"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/editTextBusinessAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Business Address"
+            android:inputType="text"
+            android:visibility="gone" />
+
+        <CheckBox
+            android:id="@+id/checkBoxAgreement"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="I agree to the terms and conditions" />
+
         <Button
             android:id="@+id/buttonRegister"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="#4CAF50"
             android:text="Register"
-            android:textColor="#FFFFFF"
+            android:enabled="false"
             android:visibility="gone" />
 
-        <!-- Progress Bar -->
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="16dp"
             android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

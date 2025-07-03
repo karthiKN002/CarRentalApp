@@ -2,31 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/navigation_view_available_cars"
-        android:icon="@android:drawable/ic_menu_camera"
+        android:icon="@drawable/ic_view_cars"
         android:title="Available Cars" />
-
     <item
         android:id="@+id/navigation_view_available_contracts"
-        android:icon="@android:drawable/ic_menu_agenda"
-        android:title="My Contracts" />
-
-    <item
-        android:id="@+id/navigation_profile"
-        android:icon="@android:drawable/ic_menu_myplaces"
-        android:title="Profile" />
-
-    <!--<item
-        android:id="@+id/navigation_sign_out"
-        android:icon="@android:drawable/ic_lock_power_off"
-        android:title="Sign Out" />-->
-
+        android:icon="@drawable/ic_view_contracts"
+        android:title="Contracts" />
     <item
         android:id="@+id/navigation_nearby_mechanics"
-        android:icon="@android:drawable/ic_menu_mapmode"
-        android:title="Nearby Mechanics"/>
-
+        android:icon="@drawable/ic_location"
+        android:title="Nearby Mechanics" />
     <item
-        android:id="@+id/navigation_news"
-        android:icon="@drawable/ic_news"
-        android:title="News" />
+        android:id="@+id/navigation_profile"
+        android:icon="@drawable/ic_profile"
+        android:title="Profile" />
 </menu>

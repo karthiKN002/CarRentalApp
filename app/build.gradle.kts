@@ -44,6 +44,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProperties["GOOGLE_MAPS_API_KEY"] as String
             manifestPlaceholders["STRIPE_PUBLISHABLE_KEY"] = localProperties["STRIPE_PUBLISHABLE_KEY"] as String
+            
         }
         debug {
             manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProperties["GOOGLE_MAPS_API_KEY"] as String
@@ -65,9 +66,20 @@ android {
     lint {
         abortOnError = false
     }
+    packaging {
+        resources.excludes.add("META-INF/INDEX.LIST")
+        resources.excludes.add("META-INF/DEPENDENCIES")
+        resources.excludes.add("META-INF/*.kotlin_module")
+        resources.excludes.add("META-INF/{AL2.0,LGPL2.1}")
+    }
 }
 
 dependencies {
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0") {
+        exclude(group="org.apache.httpcomponents")// Added to prevent httpclient/httpcore conflicts
+    }
+    implementation("com.google.firebase:firebase-messaging:24.1.1")
+    implementation("com.google.firebase:firebase-functions:21.0.0")
 
     implementation("androidx.media:media:1.6.0")
     implementation("androidx.vectordrawable:vectordrawable:1.2.0")
@@ -120,7 +132,7 @@ dependencies {
     implementation("androidx.camera:camera-video:1.4.2")
 
     // Stripe Payments
-    implementation("com.stripe:stripe-android:20.37.0")
+    implementation("com.stripe:stripe-android:20.43.0")
 
     // Google APIs
     implementation("com.google.api-client:google-api-client-android:1.25.0") {
@@ -139,8 +151,9 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.8")
 
     // Networking
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation("com.stripe:stripe-android:20.43.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Integrity API
     implementation("com.google.android.play:integrity:1.4.0")
