@@ -9,9 +9,13 @@
         android:icon="@drawable/ic_view_contracts"
         android:title="Contracts" />
     <item
-        android:id="@+id/navigation_nearby_mechanics"
+        android:id="@+id/navigation_mechanics_list"
         android:icon="@drawable/ic_location"
-        android:title="Nearby Mechanics" />
+        android:title="Mechanics List" />
+    <item
+        android:id="@+id/navigation_chats"
+        android:icon="@drawable/ic_chat"
+        android:title="Chats" />
     <item
         android:id="@+id/navigation_profile"
         android:icon="@drawable/ic_profile"

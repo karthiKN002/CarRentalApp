@@ -15,7 +15,7 @@
             android:id="@+id/customerToolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/white"
+            android:background="@color/bottom_nav_icon_color"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
 
         <FrameLayout
@@ -32,7 +32,7 @@
             app:itemBackground="@color/white"
             app:itemTextColor="@android:color/black"
             app:itemIconTint="@android:color/black"
-            app:menu="@menu/bottom_nav_menu_customer" />
+            app:menu="@menu/customer_bottom_nav_menu" />
 
     </LinearLayout>
 

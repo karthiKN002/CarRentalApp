@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CarRentalApp</string>
+    <string name="app_name">GearUp</string>
     <string name="app_logo">App Logo</string>
     <string name="location_icon">Location Icon</string>
     <string name="seat_icon">Seat Icon</string>

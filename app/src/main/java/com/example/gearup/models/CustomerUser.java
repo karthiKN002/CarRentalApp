@@ -7,6 +7,7 @@ public class CustomerUser extends User {
     private int points;
 
     public CustomerUser() {
+        super();
     }
 
     public CustomerUser(String uid, String firstName, String lastName, String email, String phoneNumber, String driverLicenseId, int points, String imgUrl, boolean blocked, Timestamp createdAt) {

@@ -1,3 +1,4 @@
+
 package com.example.gearup.utilities;
 
 import com.google.firebase.firestore.GeoPoint;

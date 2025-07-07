@@ -8,30 +8,22 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.gearup.R;
-import com.example.gearup.adapters.ChatAdapter;
-import com.example.gearup.models.Message;
 import com.example.gearup.models.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class ProfileFragment extends Fragment {
 
     private TextView userNameTextView, userEmailTextView, userPhoneTextView, userTypeTextView;
-    private RecyclerView messagesRecyclerView;
-    private ChatAdapter chatAdapter;
-    private List<Message> messageList;
+    private ImageView userProfileImageView;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private String userId;
@@ -44,11 +36,7 @@ public class ProfileFragment extends Fragment {
         userEmailTextView = view.findViewById(R.id.userEmailTextView);
         userPhoneTextView = view.findViewById(R.id.userPhoneTextView);
         userTypeTextView = view.findViewById(R.id.userTypeTextView);
-        messagesRecyclerView = view.findViewById(R.id.messagesRecyclerView);
-        messageList = new ArrayList<>();
-        chatAdapter = new ChatAdapter(requireContext(), messageList);
-        messagesRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        messagesRecyclerView.setAdapter(chatAdapter);
+        userProfileImageView = view.findViewById(R.id.userProfileImageView);
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         userId = getArguments() != null ? getArguments().getString("userId") : mAuth.getCurrentUser().getUid();
@@ -75,7 +63,6 @@ public class ProfileFragment extends Fragment {
 
         if (isNetworkAvailable()) {
             loadUserDetails();
-            loadMessages();
         } else {
             if (isAdded()) {
                 Toast.makeText(requireContext(), "No internet connection. Please check your network.", Toast.LENGTH_LONG).show();
@@ -97,15 +84,38 @@ public class ProfileFragment extends Fragment {
                 .addOnSuccessListener(doc -> {
                     if (isAdded() && doc.exists()) {
                         User user = doc.toObject(User.class);
-                        if (user != null) {
-                            userNameTextView.setText(user.getFullName() != null ? user.getFullName() : "Unknown User");
-                            userEmailTextView.setText(user.getEmail() != null ? user.getEmail() : "No email");
-                            userPhoneTextView.setText(user.getPhoneNumber() != null ? user.getPhoneNumber() : "No phone");
-                            userTypeTextView.setText(user.getUserType() != null ? user.getUserType() : "Unknown type");
+                        String fullName = doc.getString("fullName");
+                        String email = doc.getString("email");
+                        String phone = doc.getString("phone");
+                        String userType = doc.getString("userType");
+                        String profileImageUrl = doc.getString("imgUrl");
+                        if (profileImageUrl == null || profileImageUrl.isEmpty()) {
+                            profileImageUrl = doc.getString("photo");
+                        }
+                        userNameTextView.setText("Name: " + (fullName != null && !fullName.isEmpty() ? fullName : "Unknown User"));
+                        userEmailTextView.setText("Email: " + (email != null && !email.isEmpty() ? email : "No email"));
+                        if (phone != null && !phone.isEmpty()) {
+                            userPhoneTextView.setText("Phone: " + phone);
+                            userPhoneTextView.setVisibility(View.VISIBLE);
+                        } else {
+                            userPhoneTextView.setVisibility(View.GONE);
+                        }
+                        userTypeTextView.setText("User Type: " + (userType != null && !userType.isEmpty() ? userType : "Unknown type"));
+                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                            Glide.with(requireContext())
+                                    .load(profileImageUrl)
+                                    .circleCrop()
+                                    .into(userProfileImageView);
+                        } else {
+                            Glide.with(requireContext())
+                                    .load(R.drawable.ic_user_avatar_placeholder)
+                                    .circleCrop()
+                                    .into(userProfileImageView);
                         }
                     } else {
                         if (isAdded()) {
-                            userNameTextView.setText("User not found");
+                            userNameTextView.setText("Name: User not found");
+                            userPhoneTextView.setVisibility(View.GONE);
                         }
                     }
                 })
@@ -113,40 +123,9 @@ public class ProfileFragment extends Fragment {
                     Log.e("ProfileFragment", "Failed to load user: " + e.getMessage());
                     if (isAdded()) {
                         Toast.makeText(requireContext(), "Failed to load user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        userNameTextView.setText("Error loading user");
+                        userNameTextView.setText("Name: Error loading user");
+                        userPhoneTextView.setVisibility(View.GONE);
                     }
-                });
-    }
-
-    private void loadMessages() {
-        String managerId = mAuth.getCurrentUser().getUid();
-        db.collection("Messages")
-                .whereIn("senderId", Arrays.asList(userId, managerId))
-                .whereIn("receiverId", Arrays.asList(userId, managerId))
-                .orderBy("timestamp", Query.Direction.ASCENDING)
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        Log.e("ProfileFragment", "Error loading messages: " + e.getMessage());
-                        if (isAdded()) {
-                            Toast.makeText(requireContext(), "Failed to load messages: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                        return;
-                    }
-                    messageList.clear();
-                    if (snapshots != null) {
-                        for (DocumentSnapshot doc : snapshots) {
-                            try {
-                                Message message = doc.toObject(Message.class);
-                                if (message != null) {
-                                    messageList.add(message);
-                                }
-                            } catch (Exception ex) {
-                                Log.e("ProfileFragment", "Error deserializing message: " + ex.getMessage());
-                            }
-                        }
-                    }
-                    chatAdapter.notifyDataSetChanged();
-                    messagesRecyclerView.scrollToPosition(messageList.size() - 1);
                 });
     }
 }

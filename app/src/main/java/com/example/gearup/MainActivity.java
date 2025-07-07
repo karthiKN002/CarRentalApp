@@ -8,7 +8,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.gearup.uiactivities.admin.AdminApprovalActivity;
+import com.example.gearup.uiactivities.customer.CustomerDashboardActivity;
 import com.example.gearup.uiactivities.manager.ManagerDashboardActivity;
+import com.example.gearup.uiactivities.mechanic.MechanicDashboardActivity;
 import com.example.gearup.utilities.LoginActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -46,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
                             intent = new Intent(MainActivity.this, ManagerDashboardActivity.class);
                         } else if ("admin".equals(userType)) {
                             intent = new Intent(MainActivity.this, AdminApprovalActivity.class);
+                        } else if ("mechanic".equals(userType)) {
+                            intent = new Intent(MainActivity.this, MechanicDashboardActivity.class);
+                        } else if ("customer".equals(userType)) {
+                            intent = new Intent(MainActivity.this, CustomerDashboardActivity.class);
                         } else {
                             // Default to login screen for unknown user types
                             intent = new Intent(MainActivity.this, LoginActivity.class);

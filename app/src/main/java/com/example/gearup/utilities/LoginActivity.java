@@ -26,6 +26,7 @@ import com.example.gearup.models.User;
 import com.example.gearup.uiactivities.customer.CustomerDashboardActivity;
 import com.example.gearup.uiactivities.manager.ManagerDashboardActivity;
 import com.example.gearup.uiactivities.admin.AdminDashboardActivity;
+import com.example.gearup.uiactivities.mechanic.MechanicDashboardActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -209,7 +210,7 @@ public class LoginActivity extends AppCompatActivity {
     private void saveUserToFirestore(User user) {
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
-                user.setFcmToken(task.getResult()); // Assume User class has setFcmToken
+                user.setFcmToken(task.getResult());
             }
             db.collection("users").document(user.getUid()).set(user)
                     .addOnSuccessListener(aVoid -> {
@@ -283,7 +284,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // Update navigateUser to include token saving
     private void navigateUser(FirebaseUser firebaseUser, String provider) {
         db.collection("users").document(firebaseUser.getUid()).get()
                 .addOnSuccessListener(document -> {
@@ -297,7 +297,7 @@ public class LoginActivity extends AppCompatActivity {
                         String email = document.getString("email");
 
                         saveUserToPreferences(firebaseUser.getUid(), email, userType, fullName);
-                        saveFcmToken(firebaseUser.getUid()); // Add this
+                        saveFcmToken(firebaseUser.getUid());
                         navigateToDashboard(userType, approved);
                     } else {
                         Toast.makeText(this, "User profile not found. Please register.", Toast.LENGTH_SHORT).show();
@@ -313,7 +313,7 @@ public class LoginActivity extends AppCompatActivity {
     private void navigateToDashboard(String userType, boolean approved) {
         Intent intent;
         if ("manager".equals(userType)) {
-            if (approved == false) { // Simplified condition
+            if (!approved) {
                 Toast.makeText(this, "Your manager account is pending approval", Toast.LENGTH_LONG).show();
                 mAuth.signOut();
                 googleSignInClient.signOut();
@@ -322,6 +322,14 @@ public class LoginActivity extends AppCompatActivity {
             intent = new Intent(this, ManagerDashboardActivity.class);
         } else if ("admin".equals(userType)) {
             intent = new Intent(this, AdminDashboardActivity.class);
+        } else if ("mechanic".equals(userType)) {
+            if (!approved) {
+                Toast.makeText(this, "Your mechanic account is pending approval", Toast.LENGTH_LONG).show();
+                mAuth.signOut();
+                googleSignInClient.signOut();
+                return;
+            }
+            intent = new Intent(this, MechanicDashboardActivity.class);
         } else {
             intent = new Intent(this, CustomerDashboardActivity.class);
         }
@@ -340,7 +348,6 @@ public class LoginActivity extends AppCompatActivity {
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

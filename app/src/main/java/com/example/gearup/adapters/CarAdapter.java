@@ -18,7 +18,9 @@ import com.bumptech.glide.Glide;
 import com.example.gearup.R;
 import com.example.gearup.states.car.CarAvailabilityState;
 import com.example.gearup.uiactivities.customer.CarDetailsFragment;
+import com.example.gearup.uiactivities.customer.CustomerDashboardActivity;
 import com.example.gearup.uiactivities.manager.EditCarFragment;
+import com.example.gearup.uiactivities.mechanic.MechanicDashboardActivity;
 import com.example.gearup.models.Car;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,9 +117,12 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
                 bundle.putString("carDescription", car.getDescription());
                 bundle.putString("managerId", car.getManagerId());
                 carDetailsFragment.setArguments(bundle);
+                int containerId = context instanceof CustomerDashboardActivity
+                        ? R.id.customerFragmentContainer
+                        : R.id.mechanicFragmentContainer;
                 fragmentActivity.getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.customerFragmentContainer, carDetailsFragment)
+                        .replace(containerId, carDetailsFragment)
                         .addToBackStack(null)
                         .commit();
             }

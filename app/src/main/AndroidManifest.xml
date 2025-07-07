@@ -91,6 +91,9 @@
             android:name="com.example.gearup.uiactivities.admin.AdminApprovalActivity"
             android:exported="false" />
         <activity
+            android:name="com.example.gearup.uiactivities.mechanic.MechanicDashboardActivity"
+            android:exported="false" />
+        <activity
             android:name="com.example.gearup.utilities.RegisterActivity"
             android:exported="true" />
         <activity
