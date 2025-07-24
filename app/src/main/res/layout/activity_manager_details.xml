@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/textViewName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Name"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textViewEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Email"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textViewPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Phone"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textViewBusinessAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Business Address"
+        android:textSize="16sp"
+        android:layout_marginBottom="25dp" />
+
+    <Button
+        android:id="@+id/buttonViewAadhar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:text="View Aadhar" />
+
+    <Button
+        android:id="@+id/buttonViewPan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View PAN"
+        android:layout_marginBottom="18dp" />
+
+    <Button
+        android:id="@+id/buttonViewLicense"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View License"
+        android:layout_marginBottom="18dp" />
+
+    <Button
+        android:id="@+id/buttonViewPassbook"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View Passbook"
+        android:layout_marginBottom="18dp" />
+
+    <Button
+        android:id="@+id/buttonViewPhoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="View Photo" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="150dp">
+
+        <Button
+            android:id="@+id/buttonApprove"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Approve"
+            android:layout_marginStart="8dp" />
+
+        <Button
+            android:id="@+id/buttonReject"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Reject"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+</LinearLayout>

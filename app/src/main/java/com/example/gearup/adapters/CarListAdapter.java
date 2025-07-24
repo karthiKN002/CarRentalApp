@@ -67,7 +67,6 @@ public class CarListAdapter extends RecyclerView.Adapter<CarListAdapter.CarViewH
         private final TextView carLocation;
         private final TextView carSeats;
         private final TextView carPrice;
-        private final TextView carStatus;
         private final RatingBar carRating;
         private final TextView ratingCount;
         private final ImageButton editButton;
@@ -81,7 +80,6 @@ public class CarListAdapter extends RecyclerView.Adapter<CarListAdapter.CarViewH
             carLocation = itemView.findViewById(R.id.carLocation);
             carSeats = itemView.findViewById(R.id.carSeats);
             carPrice = itemView.findViewById(R.id.carPrice);
-            carStatus = itemView.findViewById(R.id.carStatus);
             carRating = itemView.findViewById(R.id.carRating);
             ratingCount = itemView.findViewById(R.id.ratingCount);
             editButton = itemView.findViewById(R.id.editButton);
@@ -101,10 +99,10 @@ public class CarListAdapter extends RecyclerView.Adapter<CarListAdapter.CarViewH
             carSeats.setText(String.format("%d Seats", car.getSeats()));
             carPrice.setText(String.format("₹%.2f/day", car.getPrice()));
 
-            // Set status
+            /*// Set status
             carStatus.setText(car.isAvailable() ? "AVAILABLE" : "BOOKED");
             carStatus.setBackgroundResource(car.isAvailable() ?
-                    R.drawable.bg_status_available : R.drawable.bg_status_booked);
+                    R.drawable.bg_status_available : R.drawable.bg_status_booked);*/
 
             // Set rating info
             carRating.setRating(car.getRating());

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_chat"
+        android:icon="@drawable/ic_chat"
+        android:title="Chats" />
+    <item
+        android:id="@+id/navigation_view_cars"
+        android:icon="@drawable/ic_view_cars"
+        android:title="View Cars" />
+    <item
+        android:id="@+id/navigation_add_car"
+        android:icon="@drawable/ic_add_car"
+        android:title="Add Car" />
+    <item
+        android:id="@+id/navigation_view_contracts"
+        android:icon="@drawable/ic_contracts"
+        android:title="Contracts" />
+    <item
+        android:id="@+id/navigation_mechanics_list"
+        android:icon="@drawable/ic_location"
+        android:title="Nearby Mechanics" />
+</menu>

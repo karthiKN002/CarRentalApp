@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +17,15 @@ import android.widget.Toast;
 import com.example.gearup.R;
 import com.example.gearup.adapters.CarAdapter;
 import com.example.gearup.models.Car;
+import com.example.gearup.states.car.CarAvailabilityState;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ViewCarsFragment extends Fragment {
 
@@ -30,6 +34,7 @@ public class ViewCarsFragment extends Fragment {
     private CarAdapter carAdapter;
     private ArrayList<Car> carList;
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
     private static final String PREFS_NAME = "CarRentalAppPrefs";
     private static final String ROLE_KEY = "user_role";
     private ListenerRegistration carListener;
@@ -50,6 +55,7 @@ public class ViewCarsFragment extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         carList = new ArrayList<>();
@@ -100,6 +106,7 @@ public class ViewCarsFragment extends Fragment {
             }
         }
         carAdapter.updateData(filteredCars);
+        noCarsTextView.setVisibility(filteredCars.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private boolean isAdminOrManager() {
@@ -108,14 +115,44 @@ public class ViewCarsFragment extends Fragment {
         return "admin".equals(role) || "manager".equals(role);
     }
 
+    private boolean isAdmin() {
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String role = sharedPreferences.getString(ROLE_KEY, "customer");
+        return "admin".equals(role);
+    }
+
     private void loadCars() {
         progressBar.setVisibility(View.VISIBLE);
         noCarsTextView.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
 
-        db.collection("Cars")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .get()
+        Query query;
+        if (isAdminOrManager()) {
+            if (isAdmin()) {
+                // Admins see all cars
+                query = db.collection("Cars")
+                        .orderBy("createdAt", Query.Direction.DESCENDING);
+                Log.d("ViewCarsFragment", "Loading all cars for admin");
+            } else {
+                // Managers see only their own cars
+                String managerId = mAuth.getCurrentUser().getUid();
+                query = db.collection("Cars")
+                        .whereEqualTo("managerId", managerId)
+                        .orderBy("createdAt", Query.Direction.DESCENDING);
+                Log.d("ViewCarsFragment", "Loading cars for managerId: " + managerId);
+            }
+        } else {
+            // Customers see only AVAILABLE or RENTED cars
+            query = db.collection("Cars")
+                    .whereIn("state", Arrays.asList(
+                            CarAvailabilityState.AVAILABLE.toString(),
+                            CarAvailabilityState.RENTED.toString()
+                    ))
+                    .orderBy("createdAt", Query.Direction.DESCENDING);
+            Log.d("ViewCarsFragment", "Loading available/rented cars for customer");
+        }
+
+        query.get()
                 .addOnCompleteListener(task -> {
                     progressBar.setVisibility(View.GONE);
 
@@ -125,6 +162,7 @@ public class ViewCarsFragment extends Fragment {
                             Car car = document.toObject(Car.class);
                             car.setId(document.getId());
                             carList.add(car);
+                            Log.d("ViewCarsFragment", "Loaded car: id=" + car.getId() + ", managerId=" + car.getManagerId() + ", name=" + car.getBrand() + " " + car.getModel());
                         }
 
                         if (carList.isEmpty()) {
@@ -147,5 +185,6 @@ public class ViewCarsFragment extends Fragment {
 
     private void showErrorAndRetry(Exception e) {
         Toast.makeText(getContext(), "Failed to load cars: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        Log.e("ViewCarsFragment", "Error loading cars: " + e.getMessage());
     }
 }

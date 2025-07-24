@@ -12,8 +12,9 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="Profile Image" />
+        android:layout_margin="40dp"
+        android:contentDescription="Profile Image"
+        android:background="@color/lightGrey"/>
 
     <TextView
         android:id="@+id/userNameTextView"
@@ -36,15 +37,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:textSize="16sp"
-        android:textColor="#000000" />
+        android:textColor="#000000"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/userTypeTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:textSize="16sp"
-        android:textColor="#000000" />
+        android:textColor="#000000"
+        android:textSize="16sp" />
 
 </LinearLayout>

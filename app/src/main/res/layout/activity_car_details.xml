@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/textViewCar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Car Name"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:text="Toyota Camry" />
+
+        <TextView
+            android:id="@+id/textViewLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location"
+            tools:text="Mumbai" />
+
+        <TextView
+            android:id="@+id/textViewPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Price"
+            tools:text="₹2000/day" />
+
+        <TextView
+            android:id="@+id/textViewDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            tools:text="Comfortable sedan" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewImages"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:orientation="horizontal"
+            tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:visibility="visible" />
+
+        <Button
+            android:id="@+id/buttonViewFc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View FC"
+            tools:enabled="true" />
+
+        <Button
+            android:id="@+id/buttonViewRc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View RC"
+            tools:enabled="true" />
+
+        <Button
+            android:id="@+id/buttonViewInsurance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Insurance"
+            tools:enabled="true" />
+
+        <Button
+            android:id="@+id/buttonViewPuc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View PUC"
+            tools:enabled="true" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:layout_marginTop="150dp">
+
+            <Button
+                android:id="@+id/buttonApprove"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Approve"
+                android:layout_marginStart="8dp" />
+
+            <Button
+                android:id="@+id/buttonReject"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Reject"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

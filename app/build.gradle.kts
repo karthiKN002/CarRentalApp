@@ -36,6 +36,7 @@ android {
         buildConfigField("String", "ADMIN_EMAILS", "\"${localProperties["ADMIN_EMAILS"]}\"")
         buildConfigField("String", "GOOGLE_CSE_API_KEY", "\"${localProperties["GOOGLE_CSE_API_KEY"]}\"")
         buildConfigField("String", "GOOGLE_CSE_CX", "\"${localProperties["GOOGLE_CSE_CX"]}\"")
+        buildConfigField("String", "FCM_SERVER_KEY", "\"${localProperties["FCM_SERVER_KEY"]}\"")
     }
 
     buildTypes {

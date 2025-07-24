@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="buttonStartRecording" type="id" />
+    <item name="buttonStopRecording" type="id" />
+    <item name="textViewVideoCaution" type="id" />
+    <item name="emptyChatView" type="id" />
+    <item name="chatListRecyclerView" type="id" />
+</resources>

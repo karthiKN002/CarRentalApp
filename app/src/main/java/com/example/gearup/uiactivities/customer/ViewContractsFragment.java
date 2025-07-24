@@ -3,228 +3,116 @@ package com.example.gearup.uiactivities.customer;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.example.gearup.R;
 import com.example.gearup.adapters.ContractAdapter;
 import com.example.gearup.models.Contract;
-import com.example.gearup.states.contract.ContractState;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.Query;
-
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class ViewContractsFragment extends Fragment {
 
     private RecyclerView recyclerViewContracts;
-    private ContractAdapter contractAdapter;
-    private FirebaseAuth mAuth;
+    private TextView noContractsTextView;
     private FirebaseFirestore db;
-    private ArrayList<Contract> contractList;
+    private FirebaseAuth mAuth;
+    private ContractAdapter contractAdapter;
+    private List<Contract> contractList;
     private static final String PREFS_NAME = "CarRentalAppPrefs";
     private static final String ROLE_KEY = "user_role";
-    private ListenerRegistration contractListener;
-    private TextView noContractsTextView;
 
-    public ViewContractsFragment() {}
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        contractList = new ArrayList<>();
+    }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_view_contract, container, false);
-
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
-        contractList = new ArrayList<>();
-
-        recyclerViewContracts = view.findViewById(R.id.recyclerViewContracts);
-        recyclerViewContracts.setLayoutManager(new LinearLayoutManager(getContext()));
-        contractAdapter = new ContractAdapter(getActivity(), contractList);
-        recyclerViewContracts.setAdapter(contractAdapter);
-
-        noContractsTextView = view.findViewById(R.id.noContractsTextView);
-
-        loadContractsBasedOnRole();
-
-        return view;
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_view_contract, container, false);
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (contractListener != null) {
-            contractListener.remove();
-            contractListener = null;
-        }
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        recyclerViewContracts = view.findViewById(R.id.recyclerViewContracts);
+        noContractsTextView = view.findViewById(R.id.noContractsTextView);
+
+        recyclerViewContracts.setLayoutManager(new LinearLayoutManager(getContext()));
+        contractAdapter = new ContractAdapter(getContext(), contractList);
+        recyclerViewContracts.setAdapter(contractAdapter);
+
+        loadContracts();
     }
 
-    private void loadContractsBasedOnRole() {
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    private boolean isAdminOrManager() {
+        SharedPreferences sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String role = sharedPreferences.getString(ROLE_KEY, "customer");
-        String userId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
+        return "admin".equals(role) || "manager".equals(role);
+    }
 
-        if (userId == null) {
-            Log.e("ViewContractsFragment", "Error: User ID is null.");
-            Toast.makeText(getContext(), "Error: User not logged in", Toast.LENGTH_SHORT).show();
+    private void loadContracts() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            noContractsTextView.setVisibility(View.VISIBLE);
+            recyclerViewContracts.setVisibility(View.GONE);
             return;
         }
 
-        if ("admin".equals(role)) {
-            loadAllContracts();
-        } else if ("manager".equals(role)) {
-            loadManagerContracts(userId);
-        } else if ("customer".equals(role)) {
-            loadCustomerContracts(userId);
+        String userId = currentUser.getUid();
+        Query query;
+        if (isAdminOrManager()) {
+            query = db.collection("Contracts")
+                    .whereEqualTo("managerId", userId)
+                    .orderBy("status", Query.Direction.ASCENDING)
+                    .orderBy("createdAt", Query.Direction.DESCENDING);
         } else {
-            Log.e("ViewContractsFragment", "Error: Role not recognized.");
-            Toast.makeText(getContext(), "Error: Invalid role", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void loadAllContracts() {
-        if (contractListener != null) {
-            contractListener.remove();
+            query = db.collection("Contracts")
+                    .whereEqualTo("userId", userId)
+                    .orderBy("status", Query.Direction.ASCENDING)
+                    .orderBy("createdAt", Query.Direction.DESCENDING);
         }
 
-        contractListener = db.collection("Contracts")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .addSnapshotListener((querySnapshot, e) -> {
-                    if (e != null) {
-                        Log.e("ViewContractsFragment", "Error loading contracts: " + e.getMessage());
-                        Toast.makeText(getContext(), "Error loading contracts", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (querySnapshot != null) {
-                        contractList.clear();
-                        for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-                            Contract contract = document.toObject(Contract.class);
+        query.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    contractList.clear();
+                    for (DocumentSnapshot document : querySnapshot) {
+                        Contract contract = document.toObject(Contract.class);
+                        if (contract != null) {
                             contract.setId(document.getId());
                             contractList.add(contract);
                         }
-                        updateUI();
                     }
-                });
-    }
-
-    private void loadCustomerContracts(String userId) {
-        if (contractListener != null) {
-            contractListener.remove();
-        }
-
-        contractListener = db.collection("Contracts")
-                .whereEqualTo("userId", userId)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .addSnapshotListener((querySnapshot, e) -> {
-                    if (e != null) {
-                        Log.e("ViewContractsFragment", "Error loading user contracts: " + e.getMessage());
-                        Toast.makeText(getContext(), "Error loading user contracts", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (querySnapshot != null) {
-                        contractList.clear();
-                        for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-                            Contract contract = document.toObject(Contract.class);
-                            contract.setId(document.getId());
-                            // Check if contract is expired
-                            if (contract.getState() == ContractState.ACTIVE && contract.getEndDate() != null && isContractExpired(contract.getEndDate())) {
-                                updateContractStatusToCompleted(contract.getId());
-                            } else {
-                                contractList.add(contract);
-                            }
-                        }
-                        updateUI();
-                    }
-                });
-    }
-
-    private void loadManagerContracts(String managerId) {
-        if (contractListener != null) {
-            contractListener.remove();
-        }
-
-        contractListener = db.collection("Contracts")
-                .whereEqualTo("managerId", managerId)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .addSnapshotListener((querySnapshot, e) -> {
-                    if (e != null) {
-                        Log.e("ViewContractsFragment", "Error loading manager contracts: " + e.getMessage());
-                        Toast.makeText(getContext(), "Error loading manager contracts", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (querySnapshot != null) {
-                        contractList.clear();
-                        for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-                            Contract contract = document.toObject(Contract.class);
-                            contract.setId(document.getId());
-                            contractList.add(contract);
-                        }
-                        updateUI();
-                    }
-                });
-    }
-
-    private boolean isContractExpired(Timestamp endDate) {
-        Date currentDate = new Date();
-        return endDate.toDate().before(currentDate);
-    }
-
-    private void updateContractStatusToCompleted(String contractId) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("status", ContractState.COMPLETED.toString());
-        updates.put("updateDate", FieldValue.serverTimestamp());
-
-        db.collection("Contracts").document(contractId).update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("ViewContractsFragment", "Contract " + contractId + " updated to COMPLETED");
-                    // Re-fetch the contract to update the list with the new status
-                    db.collection("Contracts").document(contractId).get()
-                            .addOnSuccessListener(documentSnapshot -> {
-                                Contract updatedContract = documentSnapshot.toObject(Contract.class);
-                                if (updatedContract != null) {
-                                    updatedContract.setId(contractId);
-                                    int index = contractList.indexOf(contractList.stream()
-                                            .filter(c -> c.getId().equals(contractId))
-                                            .findFirst().orElse(null));
-                                    if (index >= 0) {
-                                        contractList.set(index, updatedContract);
-                                    } else {
-                                        contractList.add(updatedContract);
-                                    }
-                                    updateUI();
-                                }
-                            });
+                    contractAdapter.notifyDataSetChanged();
+                    noContractsTextView.setVisibility(contractList.isEmpty() ? View.VISIBLE : View.GONE);
+                    recyclerViewContracts.setVisibility(contractList.isEmpty() ? View.GONE : View.VISIBLE);
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ViewContractsFragment", "Failed to update contract: " + e.getMessage());
-                    Toast.makeText(getContext(), "Failed to update contract status", Toast.LENGTH_SHORT).show();
+                    Log.e("ViewContractsFragment", "Error fetching contracts: " + e.getMessage());
+                    Toast.makeText(getContext(), "Failed to load contracts", Toast.LENGTH_SHORT).show();
+                    noContractsTextView.setVisibility(View.VISIBLE);
+                    recyclerViewContracts.setVisibility(View.GONE);
                 });
-    }
-
-    private void updateUI() {
-        if (contractList.isEmpty()) {
-            recyclerViewContracts.setVisibility(View.GONE);
-            noContractsTextView.setVisibility(View.VISIBLE);
-        } else {
-            recyclerViewContracts.setVisibility(View.VISIBLE);
-            noContractsTextView.setVisibility(View.GONE);
-            contractAdapter.notifyDataSetChanged();
-        }
     }
 }
