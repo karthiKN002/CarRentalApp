@@ -79,5 +79,4 @@ This project was originally inspired by an open-source template but has been sig
 
 ---
 
-## 📂 Folder Structure
 
