@@ -59,23 +59,23 @@ This project was originally inspired by an open-source template but has been sig
 ## 📸 Screenshots
 
 ### 🔑 Login 
-<img src="./imgs/login.jpg" alt="Login" width="1080"/>
+<img src="./imgs/login.jpg" alt="Login" width="300px"/>
 
 ### 🧍 Customer Dashboard & Booking
-<img src="./imgs/customer_dashboard.jpg" alt="Customer Dashboard" width="1080"/>
+<img src="./imgs/customer_dashboard.jpg" alt="Customer Dashboard" width="300px"/>
 
 ### 📍 Nearby Mechanics
-<img src="./imgs/nearby_mechanics.jpg" alt="Nearby Mechanics" width="1080"/>
+<img src="./imgs/nearby_mechanics.jpg" alt="Nearby Mechanics" width="300px"/>
 
 ### 🧾 Car Listing
-<img src="./imgs/list_car.jpg" alt="Car Listing" width="1080"/>
-<img src="./imgs/rent_car.jpg" alt="Rent Car" width="1080"/>
+<img src="./imgs/list_car.jpg" alt="Car Listing" width="300px"/>
+<img src="./imgs/rent_car.jpg" alt="Rent Car" width="300px"/>
 
 ### 🗂️ Admin Approval Panel
-<img src="./imgs/admin_approval.jpg" alt="Admin Approval" width="1080"/>
+<img src="./imgs/admin_approval.jpg" alt="Admin Approval" width="300px"/>
 
 ### 💬 Chat Support
-<img src="./imgs/chat_module.jpg" alt="Chat Module" width="1080"/>
+<img src="./imgs/chat_module.jpg" alt="Chat Module" width="300px"/>
 
 ---
 
