@@ -1,94 +1,83 @@
-# Car Rental Management App
+# GearUp: Car Rental & Instant Mechanic Support App 🚗🔧
 
-This repository contains the **Car Rental Management App**, a comprehensive Android application developed to streamline operations in the car rental industry for both customers and administrators.
+**GearUp** is an Android-based mobile application designed to revolutionize the self-drive car rental experience while offering real-time mechanic support. This app bridges the gap between car owners (managers), customers, and mechanics—ensuring safe rentals and quick breakdown assistance.
 
 ---
 
 ## 📖 About
 
-The **Car Rental Management App** is designed to simplify car rental processes through features like user authentication, car management, rental bookings, and secure payment processing. Built using modern tools and technologies, the app provides a seamless experience for both customers and administrators.
+This project was originally inspired by an open-source template but has been significantly customized and enhanced. Key modules, authentication mechanisms, UI layouts, and business logic have been restructured to align with real-world use cases relevant to the Indian market, especially for **yellow board vehicle rentals**.
+
+---
+
+## 🧑‍💼 User Roles
+
+### 👤 **Customer**
+- Login via OTP authentication.
+- Search and view available rental cars by brand, fuel type, and price.
+- Book cars for specific dates with delivery location.
+- Access a list of nearby mechanics in case of breakdown.
+- Real-time chat with car managers or mechanics.
+
+### 🚗 **Manager (Car Owner)**
+- Register with mobile number and upload shop license (PDF) for admin verification.
+- Add and manage car listings (images, price, documents).
+- View rental bookings from customers and manage car availability.
+
+### 🛠️ **Mechanic**
+- Register as a verified mechanic with service area.
+- Displayed to nearby customers during vehicle breakdowns.
+- Available for direct chat or call by customers.
+
+### 🛡️ **Admin**
+- Review and approve manager registrations based on license verification.
+- Monitor and block users or managers as needed.
+- Manage app-wide data consistency and control.
 
 ---
 
 ## 📝 Key Features
 
-### **Customer's Side**
-
-- **User Authentication**: Secure login and registration using Firebase Authentication.
-- **Car Search and Details**: Browse and search for cars based on brand, model, pricing, and availability.
-- **Car Rental Process**: Book cars for specific rental periods.
-- **Payment Options**: Make secure payments using Stripe API.
-- **Post-Rental Management**: View rental contracts and manage personal account details.
-
-### **Admin's Side**
-
-- **Car Management**: Add, edit, view, and update car details.
-- **Contract Oversight**: Manage and update customer rental contracts.
-- **User Management**: View and block user accounts.
+- ✅ OTP-based Firebase Authentication for secure login.
+- 🚙 Yellow board car listings with verified documents.
+- 📍 Location-based discovery of nearby mechanics.
+- 💬 Real-time Firebase chat module between customer, manager, and mechanic.
+- 📄 Admin-controlled manager approval workflow.
+- 📸 Firebase Storage for uploading car images and PDF licenses.
+- 🔐 Role-based access and separate dashboards for each user type.
 
 ---
 
 ## 💻 Technologies Used
 
-- **Frontend**: XML (UI design), Java (business logic), Gradle (build automation).
-- **Backend**:
-  - Firebase Authentication for user login.
-  - Firebase Storage for managing car images.
-  - APIs: Stripe for payments, Google Location, and Google Calendar for bookings.
-- **Tools**: Android Studio, Firebase Console, GitHub.
+- **Frontend**: Java, XML (Android)
+- **Backend**: Firebase Firestore, Firebase Auth, Firebase Storage
+- **Tools**: Android Studio, Firebase Console, GitHub
 
 ---
 
 ## 📸 Screenshots
 
-### Customer's Side
+### 🔑 Login 
+<img src="./imgs/login.jpg" alt="Login" width="1080"/>
 
-#### Login and Registration
+### 🧍 Customer Dashboard & Booking
+<img src="./imgs/customer_dashboard.jpg" alt="Customer Dashboard" width="1080"/>
 
-<img src="./imgs/LoginAndSignUp.png" alt="Login and Registration" width="500px"/>
+### 📍 Nearby Mechanics
+<img src="./imgs/nearby_mechanics.jpg" alt="Nearby Mechanics" width="1080"/>
 
-#### Dashboard
+### 🧾 Car Listing
+<img src="./imgs/list_car.jpg" alt="Car Listing" width="1080"/>
+<img src="./imgs/rent_car.jpg" alt="Rent Car" width="1080"/>
 
-<img src="./imgs/CustomerDashboard.png" alt="Customer Dashboard" width="200px"/>
+### 🗂️ Admin Approval Panel
+<img src="./imgs/admin_approval.jpg" alt="Admin Approval" width="1080"/>
 
-#### Rent a Car
-
-<img src="./imgs/RentCar.png" alt="Rent Car" width="200px"/>
-
-#### Payment
-
-<img src="./imgs/StripeAPI-Payment.png" alt="Payment" width="200px"/>
-
-#### Contracts
-
-<img src="./imgs/PersonalContracts.png" alt="Contracts" width="500px"/>
-
-#### Profile
-
-<img src="./imgs/CustomerProfile.png" alt="Profile" width="200px"/>
-
----
-
-### Admin's Side
-
-#### Dashboard
-
-<img src="./imgs/BlockUsers.png" alt="Admin Dashboard" width="500px"/>
-
-#### Edit Car Details
-
-<img src="./imgs/EditCarDetails.png" alt="Edit Car Details" width="500px"/>
-
-#### Manage Contracts
-
-<img src="./imgs/CustomerHappyFlow.png" alt="Manage Contracts" width="500px"/>
+### 💬 Chat Support
+<img src="./imgs/chat_module.jpg" alt="Chat Module" width="1080"/>
 
 ---
 
 ## 📂 Folder Structure
 
-- **`imgs/`**: Contains all screenshots and images.
-- **`app/`**: Android application source code.
-- **`node_modules/`**: Dependencies for Stripe API and other backend integrations.
-- **`.env`**: Environment variables for API keys.
-- **`server.js`**: Node.js server file for Stripe API.
